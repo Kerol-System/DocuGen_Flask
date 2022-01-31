@@ -1,0 +1,158 @@
+<!doctype html>
+<title>Flask Swiftdoc-1.0</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+{% include 'header.html' %}
+<br><br><br>
+<div class="table-title">
+    <h2><b> Report  Generator </b>- Generate Report  by uploading Only   (.tgz or .xml ) Files.  </h2>
+</div>
+<div class="tab">
+    <button class="tablinks" onclick="openCity(event, 'Tmp')" disabled>Step1: Select Template Inputs </button>
+    <button class="tablinks" onclick="openCity(event, 'Tsf')" disabled>Step2: Upload TSF File</button>
+    <button class="tablinks" onclick="openCity(event, 'Customer')" disabled>Step3: Customer Info</button>
+    <button class="tablinks" onclick="openCity(event, 'Report')" disabled>Step4: Generate Report</button>
+    <button class="tablinks" onclick="openCity(event, 'Troubleshooting')" id="defaultOpen">
+    <i class="fa fa-cog" style="font-size:18px;"> </i>      Settings
+    </button>
+</div>
+
+<div id="Troubleshooting" class="tabcontent">
+            <br>
+            <div class="row">
+                 <label>
+                     <b>Logs</b>
+                 </label>
+                <div class="col-sm-3">
+                    <br>
+                    <a href="/logs" title="Download Logs" class="btn btn-success" style=" background-color: #28a745;">
+                        <i class="fa fa-download"  style="font-size:15px;"  > Download</i>
+                    </a>
+                    <a href="/stream" title="View the logs file" class="btn btn-success" style=" background-color: gray;">
+                        <i class="fa fa-eye"  style="font-size:15px;" > View</i>
+                    </a>
+                </div>
+            </div>
+    <br><br>
+    <div class="row">
+        <label> <b>Security <b></b> </label>
+        <br><br>
+        <div class="container">
+            <a href=" " title=" Download Server Certificate" class="btn btn-success" style=" background-color: #28a745;" id="">
+              <i class="fa fa-download"  style="font-size:15px;" > Download</i>
+            </a>
+<!--            <a href="" title=" Download Server Certificate" class="">-->
+<!--                <i class="fa fa-download"  style="font-size:15px;" > Download SLL Certificate</i>-->
+<!--            </a>-->
+        </div>
+    </div>
+    <br><br>
+    <form method="post" action="/streaming" enctype="multipart/form-data">
+        <div class="col-sm-3">
+            <label>
+                <b>Upload Template</b></label>
+            <input type="file" name="file" multiple="true" id="id_conf_temp" autocomplete="off" class="form-control" required onchange="return fileValidation()">
+        </div>
+        <p>
+            <button type="reset" class="btn btn-danger"  value="Clear">Reset</button>
+            <button type="submit" class="btn btn-warning" value="Submit" onsubmit="{{url_for("streaming")}}"><i class="fa fa-upload"  style="font-size:15px;" > Upload</i></button>
+        </p>
+    </form>
+    <div class="col-sm-3">
+        <br>
+        <label>
+            <b>Download Template</b></label>
+        <select name="template_download" required="" placeholder="" id="template_download" class="form-control" onchange="show()">
+            <option value="None">--Select--</option>
+            {% for file in files %}
+            <option value="{{file}}">{{file}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <a href=" " title=" Download  the uploaded Template" class="btn btn-success" style=" background-color: #28a745;" id="link2">
+            <i class="fa fa-download"  style="font-size:15px;" > Download</i>
+        </a>
+        <a href=" " title=" Delete the Template" class="btn btn-danger" id="delete">
+            <i class="fa fa-trash"  style="font-size:15px;" > Delete</i>
+        </a>
+    </div>
+</div>
+
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function fileValidation() {
+            var fileInput =
+                document.getElementById('id_conf_temp');
+
+            var filePath = fileInput.value;
+
+            var allowedExtensions =
+                    /(\.docx)$/i;
+
+            if (!allowedExtensions.exec(filePath)) {
+                Swal.fire('Invalid file type','Only .docx file supported.','error');
+                fileInput.value = '';
+                return false;
+            }
+        }
+    function show(){
+    var e = document.getElementById("template_download");
+    var strUser = e.options[e.selectedIndex].value;
+    var strLink = "/static/template_file/" + strUser;
+    var strLink1 = "/static/template_file/" + strUser+"/delete";
+    document.getElementById("link2").setAttribute("href", strLink);
+    document.getElementById("delete").setAttribute("href", strLink1);
+    }
+    function validate() {
+        var regName = /^[^_-\s][a-zA-Z_\s-]+$/;
+    var name = document.getElementById('id_reportname').value;
+    if(!regName.test(name)){
+        Swal.fire('Invalid Report Name','Numbers,_,starting with space & _ , special characters is not allowed','error');
+        id_reportname.value = '';
+        return false;
+    }else{
+        return true;
+    }
+    }
+function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+<script>
+     var messages = {{ messages | safe }};
+     for (var i=0; i<messages.length; i++) {
+     Swal.fire(messages[i]);
+     }
+</script>
+{% endif %}
+{% endwith %}
+
+<script>
+    $(document).ready(function(){
+         $('#gen').click(function(){
+             Swal.fire('Report Generated','Report is successfully generated','success');
+         });
+     });
+</script>

@@ -1,0 +1,211 @@
+<!doctype html>
+<title>Flask Swiftdoc-1.0</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.js"></script>
+
+<body>
+{% include 'header.html' %}
+<br><br><br>
+    <div class="table-title">
+        <h2><b> Report  Generator </b>- Generate Report  by uploading Only   (.tgz or .xml ) Files.  </h2>
+    </div>
+
+
+<div class="tab">
+<button class="tablinks" onclick="openCity(event, 'Tmp')" disabled>Step1: Select Template Inputs </button>  <button class="tablinks" onclick="openCity(event, 'Tsf')" disabled >Step2: Upload TSF File</button>
+  <button class="tablinks" onclick="openCity(event, 'Customer')" id="defaultOpen">Step3: Customer Info</button>
+  <button class="tablinks" onclick="openCity(event, 'Report')" disabled>Step4: Generate Report</button>
+   <button class="tablinks" >
+      <a href="/streaming" style="text-decoration:none;color: black;">
+          <i class="fa fa-cog" style="font-size:18px;"> </i> Settings
+      </a>
+  </button>
+</div>
+
+
+<div id="Customer" class="tabcontent">
+    <h3>Customer Info</h3>
+	<form action="" method="post" id="Cust_info" enctype="multipart/form-data">
+        {% if message1 and message2 %}
+        <p>{{message1}}<p>
+        <p>{{message2}}<p>
+        <p>
+        <button value="" class="btn btn-light" onclick="history.go(-1)"><i class="fa fa-arrow-left"  style="font-size:18px;" > Back</i></button>
+        <a href="/report" class="btn btn-success">
+            <i class="fa fa-arrow-right"  style="font-size:18px;" > Next</i>
+        </a>
+    </p>
+        <p>If you want to reset then please click on back button.</p>
+        {% else %}
+        <div class="row">
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <label> Customer Name</label>
+                    <a href="#" data-toggle="tooltip" title=" Alphabetical Characters <=35 , Numeric & Special characters not allowed"  >
+                        <i class="fa fa-info-circle " style="font-size:18px;"> </i>
+                    </a>
+                    <input type="text" name="customername" maxlength="35" id="id_customername" class="form-control" required="" onchange="validate();" >
+                </div>
+            </div>
+            <br>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <label>Customer Logo</label>
+                    <a href="#" data-toggle="tooltip" title=" File type = (PNG,JPG), Size <=1MB, Dimensions <= 500 x 500 px" >
+                        <i class="fa fa-info-circle " style="font-size:18px;"> </i>
+                    </a>
+                    <input type="file" name="file" id="image" class="form-control" onchange="return fileValidation()" required="">
+                </div>
+                <br>
+                <div class="container" style="margin: 0px 0px 0px -22px;">
+                    <button value="" class="btn btn-light" onclick="history.go(-1)"><i class="fa fa-arrow-left"  style="font-size:18px;" >Back</i></button>
+                    <button type="submit" class="btn btn-success" value="Submit" onsubmit="{{url_for("report_form")}}" ><i class="fa fa-arrow-right"  style="font-size:18px;" >Next</i></button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+
+
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function validate() {
+        var regName = /^[^-\s][a-zA-Z\s-]+$/;
+    var name = document.getElementById('id_customername').value;
+    if(!regName.test(name)){
+        // Swal.fire('Invalid Customer Name','','error');
+        iziToast.show({
+    title: 'Invalid Customer Name',
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+        id_customername.value = '';
+        return false;
+    }else{
+        return true;
+    }
+    }
+function fileValidation() {
+//Get reference of FileUpload.
+    var fileUpload = document.getElementById("image");
+    //Check whether the file is valid Image.
+    var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(.jpg|.png)$");
+    if (regex.test(fileUpload.value.toLowerCase())) {
+
+        //Check whether HTML5 is supported.
+        if (typeof (fileUpload.files) != "undefined") {
+            //Initiate the FileReader object.
+            var reader = new FileReader();
+            reader.readAsDataURL(fileUpload.files[0]);
+            reader.onload = function (e) {
+                //Initiate the JavaScript Image object.
+                var image = new Image();
+                //Set the Base64 string return from FileReader as source.
+                image.src = e.target.result;
+                //Validate the File Height and Width.
+                image.onload = function () {
+                    var height = this.height;
+                    var width = this.width;
+                    if (height > 500 || width > 500) {
+                        // Swal.fire('Invalid Dimensions','','error');
+                        iziToast.show({
+    title: 'Invalid Dimensions',
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+                        fileUpload.value='';
+                        return false;
+                    }
+                    return true;
+                };
+            }
+        } else {
+            // Swal.fire('HTML5 error','','error');
+            iziToast.show({
+    title: 'HTML5 error',
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+            return false;
+        }
+    } else {
+        // Swal.fire('Please upload jpg or png file','','error');
+        iziToast.show({
+    message: 'Please upload jpg or png file',
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+        fileUpload.value='';
+        return false;
+    }
+    if (fileUpload.files.length > 0) {
+            for (const i = 0; i <= fileUpload.files.length - 1; i++) {
+
+                var fsize = fileUpload.files.item(i).size;
+                var file = Math.round((fsize / 1024));
+                // The size of the file.
+                if (file > 1024) {
+                    // Swal.fire('Please upload image which is <= 1mb',"",'error');
+                    iziToast.show({
+    message: 'Please upload image which is <= 1mb',
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+                    fileUpload.value='';
+                }
+            }
+        }
+        // Check if any file is selected.
+
+        }
+    function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+<script>
+     var messages = {{ messages | safe }};
+     for (var i=0; i<messages.length; i++) {
+        // Swal.fire(messages[i],'','error');
+        iziToast.show({
+     message: messages[i],
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+}
+</script>
+{% endif %}
+{% endwith %}

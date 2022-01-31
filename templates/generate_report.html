@@ -1,0 +1,196 @@
+<!doctype html>
+<title>Flask Swiftdoc-1.0</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.js"></script>
+</head>
+<body>
+{% include 'header.html' %}
+<br><br><br>
+    <div class="table-title">
+        <h2>
+            <b> Report  Generator </b>
+            Generate Report  by uploading Only   (.tgz or .xml ) Files.
+        </h2>
+    </div>
+
+<div class="tab">
+    <button class="tablinks" >
+      <a href="/" style="text-decoration:none;color: black;">
+           Step1: Select Template Inputs
+      </a>
+    </button>
+    <button class="tablinks" onclick="openCity(event, 'Tsf')" disabled>Step2: Upload TSF File</button>
+    <button class="tablinks" onclick="openCity(event, 'Customer')" disabled>Step3: Customer Info</button>
+    <button class="tablinks" onclick="openCity(event, 'Report')"id="defaultOpen">Step4: Generate Report</button>
+    <button class="tablinks" >
+        <a href="/streaming" style="text-decoration:none;color: black;">
+            <i class="fa fa-cog" style="font-size:18px;"> </i> Settings
+        </a>
+    </button>
+</div>
+
+<div id="Report" class="tabcontent">
+   <h3>Generated Report </h3>
+    <form action="/report" method="post" id="form_gen">
+        <div class="row">
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <label> Report Name </label>
+                        <a  href="#" data-toggle="tooltip" title=" Alphabetical Characters <=35 , Numeric & Special characters except _  not allowed"  >
+                            <i  class="fa fa-info-circle " style="font-size:18px;"> </i>
+                        </a>
+                        <input type="text" name="reportname" maxlength="35" id="id_reportname" class="form-control" required="" onchange="validate();" >
+                </div>
+            </div>
+            <br>
+            <div class="container" style="margin: 0px 0px 0px -22px;">
+                <button value="" class="btn btn-light" onclick="history.go(-1)"><i class="fa fa-arrow-left"  style="font-size:18px;" >Back</i></button>
+                <button type="submit" class="btn btn-warning " id="gen">Generate</button>
+                <a href="/download" id="download" title="Download the Generated Report" class="btn btn-success" style="visibility: hidden">
+                    <i class="fa fa-download"  style="font-size:18px;" > Download</i>
+                </a>
+                <a href="/preview" id="preview" title="Preview the Generated Report" class="btn btn-success" style="visibility: hidden">
+                    <i class="fa fa-eye"  style="font-size:18px;" > Preview</i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function validate() {
+        var regName = /^[^_-\s][a-zA-Z_\s-]+$/;
+    var name = document.getElementById('id_reportname').value;
+    if(!regName.test(name)){
+        // Swal.fire('Invalid Report Name','Numbers,_,starting with space & _ , special characters is not allowed','error');
+        iziToast.show({
+    title: 'Invalid Report Name',
+    message: 'Numbers,_,starting with space & _ , special characters is not allowed',
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+        id_reportname.value = '';
+        return false;
+    }else{
+        return true;
+    }
+    }
+function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<script>
+      var messages = {{ messages | safe }};
+      for (var i=0; i<messages.length; i++) {
+         iziToast.show({
+      message: messages[i],
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+}
+</script>
+{% endif %}
+{% endwith %}
+<script>
+    $(document).ready(function(){
+        $('#form_gen').submit(function(e){
+        e.preventDefault();
+        $.ajax({
+            url: '',
+            type: 'post',
+            data:$('#form_gen').serialize(),
+            success:function(){
+            }
+        });
+    });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#gen').click(function () {
+            var name = document.getElementById('id_reportname').value;
+    if(name==='') {
+        iziToast.show({
+    title: 'Invalid Report Name',
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+        document.getElementById('id_reportname').value='';
+        return false;
+    }
+//             iziToast.show({
+//     title: 'Kindly be patient',
+//     message: 'Your Report will be successfully generated in 15 seconds',
+//                 progressBar: true,
+//                 timeout:15000,
+//                 color: 'orange',
+//                 theme: 'light',
+//                 // maxWidth:500,
+//                 close: false,
+//                 position: 'center',
+//                 pauseOnHover:false,
+//                 onClosed: function(){
+//             document.getElementById("download").style.visibility = 'visible';
+//     }
+// });
+            let timerInterval
+             var duration = 15000;
+         var percent = duration / 100; // 1 percent of duration
+                 var i = 0 ;
+Swal.fire({
+  title: 'Kindly be patient',
+  html: '<b></b> completed.',
+  timer: duration,
+  timerProgressBar: true,
+  didOpen: () => {
+    Swal.showLoading()
+    const b = Swal.getHtmlContainer().querySelector('b')
+    timerInterval = setInterval(() => {
+i++;
+              b.textContent = i+"%";
+    }, percent)
+  },
+  willClose: () => {
+    if(i>=100) {
+        clearInterval(timerInterval)
+    }
+  }
+}).then((result) => {
+  /* Read more about handling dismissals below */
+  if (result.dismiss === Swal.DismissReason.timer) {
+    console.log('I was closed by the timer')
+  }
+})
+            document.getElementById("download").style.visibility = 'visible';
+                        document.getElementById("preview").style.visibility = 'visible';
+
+});
+})
+</script>

@@ -1,0 +1,133 @@
+<!doctype html>
+<title>Flask Swiftdoc-1.0</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<!--<link rel="import" href="{{ url_for('static', filename='header.html') }}">-->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.js"></script>
+
+</head>
+<body>
+{% include 'header.html' %}
+<br><br><br>
+    <div class="table-title">
+        <h2>
+            <b> Report  Generator</b>
+            Generate Report  by uploading Only  (.tgz or .xml ) Files.
+        </h2>
+    </div>
+
+
+<div class="tab">
+    <button class="tablinks" onclick="openCity(event, 'Tmp')" id="defaultOpen">Step1: Select Template Inputs </button>
+    <button class="tablinks" onclick="openCity(event, 'Tsf')" disabled >Step2: Upload TSF File</button>
+    <button class="tablinks" onclick="openCity(event, 'Customer')" disabled>Step3: Customer Info</button>
+    <button class="tablinks" onclick="openCity(event, 'Report')" disabled>Step4: Generate Report</button>
+    <button class="tablinks" >
+        <a href="/streaming" style="text-decoration:none;color: black;">
+          <i class="fa fa-cog" style="font-size:18px;"> </i> Settings
+        </a>
+    </button>
+</div>
+
+<div id="Tmp" class="tabcontent">
+    <div class="row">
+        <form action="{{ url_for('template1') }}" method="POST" id="">
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <br>
+                    <label> <b>Select Product </b></label><br><br>
+                    <select name="product_select" id="product_select" class="form-control product_select" style="width: 35%" required>
+                        <option></option>
+                        <option>All</option>
+                        <option> Panorama  </option>
+                        <option> Firewall  </option>
+                        <option> Prisma SD-WAN </option>
+                        <option> AWS VM-Series </option>
+                        <option> Azure VM-Series  </option>
+                    </select>
+                </div>
+            </div>
+            <br>
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <br>
+                    <label> <b>Select Template </b></label><br><br>
+                    <select name="template_select" required id="template_select" class="form-control template_select" style="width: 35%">
+                        <option></option>
+                        {% for file in files %}
+                        <option value="{{file}}">{{file}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <p>
+                <button type="submit" class="btn btn-success" value="Submit" ><i class="fa fa-arrow-right"  style="font-size:18px;" >Next</i></button>
+	        </p>
+            </form>
+        </div>
+</div>
+
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function() {
+        $('.template_select').select2({
+    placeholder: "Please select a template",
+    allowClear: true,
+        width:'resolve',
+});
+});
+$(document).ready(function() {
+        $('.product_select').select2({
+    placeholder: "Please select a product",
+    allowClear: true,
+        width:'resolve',
+});
+});
+
+    function fileValidation() {
+            var fileInput =
+                document.getElementById('id_conf_temp');
+
+            var filePath = fileInput.value;
+
+            var allowedExtensions =
+                    /(\.tgz)$/i;
+
+            if (!allowedExtensions.exec(filePath)) {
+                Swal.fire('Invalid file type','Only .tgz file supported.','error');
+                fileInput.value = '';
+                return false;
+            }
+        }
+function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<script>
+      var messages = {{ messages | safe }};
+      for (var i=0; i<messages.length; i++) {
+        Swal.fire(messages[i]);
+      }
+</script>
+{% endif %}
+{% endwith %}

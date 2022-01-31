@@ -1,0 +1,154 @@
+<!doctype html>
+<title>Flask Swiftdoc-1.0</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/basic.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.js"></script>
+</head>
+<body>
+{% include 'header.html' %}
+<br><br><br>
+    <div class="table-title">
+        <h2><b> Report  Generator </b>- Generate Report  by uploading Only   (.tgz or .xml ) Files.  </h2>
+    </div>
+
+<div class="tab">
+    <button class="tablinks" onclick="openCity(event, 'Tmp')" disabled>Step1: Select Template Inputs </button>
+    <button class="tablinks" onclick="openCity(event, 'Tsf')" id="defaultOpen">Step2: Upload TSF File</button>
+    <button class="tablinks" onclick="openCity(event, 'Customer')" disabled>Step3: Customer Info</button>
+    <button class="tablinks" onclick="openCity(event, 'Report')" disabled>Step4: Generate Report</button>
+    <button class="tablinks" >
+        <a href="/streaming" style="text-decoration:none;color: black;">
+            <i class="fa fa-cog" style="font-size:18px;"> </i> Settings
+        </a>
+    </button>
+</div>
+
+<div id="Tsf" class="tabcontent">
+    <h2>Upload the TSF file(s) </h2>
+<form method="post" action="/tsf_info" enctype="multipart/form-data">
+            {% if message1 %}
+    <dl>
+        <p>
+            {{message1}}
+        </p>
+    </dl>
+    <p>
+        <button value="" class="btn btn-light" onclick="history.go(-1)"><i class="fa fa-arrow-left"  style="font-size:18px;" > Back</i></button>
+        <a href="/cust_info" class="btn btn-success">
+            <i class="fa fa-arrow-right"  style="font-size:18px;" > Next</i>
+        </a>
+    </p>
+    <p>If you want to reset then please click on back button.</p>
+              {% else %}
+    <dl>
+        <div id="my-dropzone" class="dropzone dz-clickable">
+         <div class="fallback">
+            <input type="file" name="file" id="id_conf_temp" autocomplete="off" class="form-control" onchange="return fileValidation()">
+         </div>
+        </div>
+		<p>
+<!--            <input type="file" name="file" multiple="true" id="id_conf_temp" autocomplete="off" class="form-control" onchange="return fileValidation()">-->
+        </p>
+    </dl>
+    <p>
+        <button value="" class="btn btn-light" onclick="history.go(-1)"><i class="fa fa-arrow-left"  style="font-size:18px;" > Back</i></button>
+        <button type="reset" class="btn btn-danger"  value="Clear">Reset</button>
+<a href="/cust_info" class="btn btn-success isDisabled" id="next">
+            <i class="fa fa-arrow-right"  style="font-size:18px;" > Next</i>
+        </a>
+    </p>
+    {% endif %}
+</form>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    Dropzone.autoDiscover = false;
+if (document.getElementById('my-dropzone')) {
+  var myDropzone = new Dropzone("div#my-dropzone", {
+      url: "/tsf_info",
+      paramName: 'file',
+      chunking: true,
+      forceChunking: true,
+      chunkSize: 10000000, // bytes
+      maxFiles:1,
+      acceptedFiles:'.tgz',
+       success(file) {
+    iziToast.show({
+                    message: 'Your file is successfully uploaded',
+                progressBar: false,
+                color: 'green',
+                position: 'center',
+                pauseOnHover:false,
+});
+      var element = document.getElementById("next");
+      element.classList.remove("isDisabled");
+  },
+  });
+  // other code here
+}
+</script>
+<script>
+    function fileValidation() {
+            var fileInput =
+                document.getElementById('id_conf_temp');
+
+            var filePath = fileInput.value;
+
+            var allowedExtensions =
+                    /(\.tgz)$/i;
+
+            if (!allowedExtensions.exec(filePath)) {
+                // Swal.fire('Invalid file type','Only .tgz file supported.','error');
+                iziToast.show({
+    title: 'Invalid file type',
+                    message:'Only .tgz file supported.',
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+                fileInput.value = '';
+                return false;
+            }
+        }
+function openCity(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+// Get the element with id="defaultOpen" and click on it
+document.getElementById("defaultOpen").click();
+</script>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<script>
+      var messages = {{ messages | safe }};
+      for (var i=0; i<messages.length; i++) {
+        // Swal.fire(messages[i],'','error');
+         iziToast.show({
+                    message:messages[i],
+                progressBar: false,
+                color: 'red',
+                position: 'center',
+                pauseOnHover:false,
+});
+      }
+</script>
+{% endif %}
+{% endwith %}
