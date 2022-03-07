@@ -1,0 +1,224 @@
+{% extends 'main.html' %}
+{% block content %}
+<style>
+    .content-wrapper {
+    background-color:#fff;
+    }
+    .mt-2 {
+margin-top: 1em;
+}
+</style>
+ <div class="content-wrapper" id="content-wrapper" style="min-height: 585px;">
+     <section class="content">
+         <div id="main-content">
+             <div class="home-view row">
+                 <div class="col-md-3">
+                     <div class="">
+                         <div class="box-header with-border">
+                             <h3 class="box-title">Folders</h3>
+                             <div  data-onclick="newFolder"  data-_ae_click_="true">
+                                 <!--class="add-new-icon pull-right new-folder"-->
+                             </div>
+                         </div>
+                         <div class="box-body no-padding" id="folders">
+                             <ul class="folders-list nav nav-pills nav-stacked">
+                                 <li class="active">
+                                     <a href="" class="folder-holder home-folder reserved-folder">
+                                         <i class="dmio-icon fas fa-home"></i>
+                                         Home
+                                     </a>
+                                 </li>
+                                 <li>
+                                     <a href="/trash" class="folder-holder trash-folder reserved-folder">
+                                         <i class="dmio-icon fas fa-trash"></i>
+                                         Trash
+                                     </a>
+                                 </li>
+                             </ul>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="col-md-9" id="documents"><div class="documents-list">
+                     <div class="box-body">
+                         <div id="documents-list"><div id="adharaTable_" class="adhara-table-container">
+                             <div class="table-actions-container">
+                                 <div class="flex-1">
+                                 </div>
+                             </div>
+                             <div class="adhara-list-wrapper adhara-card-list">
+                                 <div class="list-contents">
+                                     <div class="row">
+                                         <div class="col-xlg-2 col-md-3 col-sm-4 col-xs-12">
+                                             <div class="card-md animated card-content-wrapper">
+                                                 <div href="#document-mutation" class="doc-card doc-card-new" data-toggle="modal" data-_ae_click_="true">
+                                                     <div class="product-img">
+                                                         <img src="{{ url_for('static', filename='img/new_brown.png') }}" alt="Create a New Template" class="h110">
+                                                     </div>
+                                                     <div class="add-new-text">Create a New Template</div>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         {% for file in files %}
+                                         <div class="col-xlg-2 col-md-3 col-sm-4 col-xs-12">
+                                             <div class="card-md animated card-content-wrapper">
+                                                 <div class="doc-card" >
+                                                     <div class="doc-actions">
+                                                         <div class="dropdown">
+                                                             <div class="overflow-container" data-onclick="overflowToggle" data-toggle="overflow-menu" data-_ae_click_="true">
+                                                                 <i class="dmio-icon dr-overflow"></i>
+                                                             </div>
+                                                             <div class="dropdown-content">
+                                                                 <a href=" " id="edit-{{file}}" title="Edit the Template"  onclick="show('{{file}}')">
+                                                                     <div class="a" data-_ae_click_="true">
+                                                                         <i class="dmio-icon fas fa-copy"></i>
+                                                                         Edit
+                                                                     </div>
+                                                                 </a>
+                                                                 <a href=" " id="down-{{file}}" title=" Download the Template"  onclick="show('{{file}}')">
+                                                                     <div class="a" data-_ae_click_="true">
+                                                                         <i class="fa fa-download"></i>
+                                                                         Download
+                                                                     </div>
+                                                                 </a>
+                                                                 <a href=" " id="delete-{{file}}" title=" Delete the Template" onclick="show('{{file}}')">
+                                                                     <div class="a" data-_ae_click_="true">
+                                                                         <i class="dmio-icon fas fa-trash"></i>
+                                                                         Trash
+                                                                     </div>
+                                                                 </a>
+                                                             </div>
+                                                         </div>
+                                                     </div>
+                                                     <div class="product-img">
+                                                         <img src="{{ url_for('static', filename='img/docx.png') }}" alt="Create a New Template" class="h110">
+                                                     </div>
+                                                     <div class="product-info">
+                                                         <div class="ellipsis">
+                                                             <a class="product-title" title="Report Generator" route="">{{file}}</a>
+                                                         </div>
+                                                     </div>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         {% endfor %}
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                         </div>
+                     </div>
+                 </div>
+                 </div>
+             </div>
+         </div>
+         <div id="cb-container" style="position: fixed; inset: 0px; z-index: 2147483647; display: none; overflow-y: scroll;">
+             <div id="cb-loader" style="z-index: 99999; visibility: hidden; transition: all 0.5s ease 0s; background: rgb(244, 245, 249); position: absolute; left: 0px; right: 0px; box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 9px 0px, rgba(0, 0, 0, 0.15) 0px 20px 30px 1px, rgba(0, 0, 0, 0.15) 0px 40px 40px 1px;">
+                 <div style="overflow: hidden;">
+                     <div id="cb-loader-header" style="padding: 12px 40px; background: rgb(255, 255, 255); box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px; text-align: center; min-height: 64px; box-sizing: border-box;">
+                         <div style="min-height: 46px; display: flex; align-items: center; margin-top: 1px;">
+                             <img id="cb-header-logo" style="max-height: 40px; max-width: 240px; vertical-align: middle; width: auto; margin: 3px auto;">
+                         </div>
+                     </div>
+                     <div id="cb-loading-bar" style="height: 2px; background: rgb(72, 231, 154); transition-duration: 0.5s; transition-timing-function: ease-in-out; visibility: hidden;">
+                     </div>
+                 </div>
+             </div>
+         </div>
+     </section>
+ </div>
+
+<!--Modal Starts here-->
+<div id="document-mutation-wrapper" class="adhara-dialog">
+    <div class="modal fade" id="document-mutation" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create a New Template</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="modal-msg">
+                            <form id="docx_up" action=" " class="new-doc-form dmio-form" data-_ae_="true" method="post">
+                                <div class="form-group new-style-radio">
+                                    <div class="row mt-2">
+                                        <div class="col-xs-6 col-md-2 col-md-offset-1">
+                                            <div class="card">
+                                                <input onclick="isDisable()" type="radio" id="type-html" name="type" value="html">
+                                                <label for="type-html">
+                                                    <img src="https://static.docupilot.app/1.23.8/images/doc_types/html.png">
+                                                </label>
+                                            </div>
+                                            <div class="doc-type-description" style="font-size:12px;">Create your template with our Document Builder</div>
+                                        </div>
+                                        <div class="col-xs-6 col-md-2">
+                                            <div class="card">
+                                                <input onclick="isDisable()"  type="radio" id="type-docx" name="type" value="docx">
+                                                <label for="type-docx">
+                                                    <img src="https://static.docupilot.app/1.23.8/images/doc_types/docx.png">
+                                                </label>
+                                            </div>
+                                            <div class="doc-type-description" style="font-size:12px;">Upload a .docx file</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="form-group">
+                                    <input type="text" id="title" name="title" class="form-control" autocomplete="off" placeholder="Template Title" maxlength="50" required="" style="font-size:14px;width:100%;" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <textarea name="description" class="form-control" placeholder="Template Description" maxlength="255" style="font-size:14px;width:100%;"></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button onclick="yesnoCheck()" type="submit" class="btn btn-primary" data-onclick="primaryAction" data-_ae_click_="true">Create a New Template</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function show(strUser){
+    var strLink = "/static/template_file/" + strUser;
+    var strLink1 = "/delete/" + strUser;
+    var strLink2 = "/edit/" + strUser;
+    document.getElementById("down-"+strUser).setAttribute("href", strLink);
+    document.getElementById("delete-"+strUser).setAttribute("href", strLink1);
+    document.getElementById("edit-"+strUser).setAttribute("href", strLink2);
+    };
+    function yesnoCheck() {
+                        if (document.getElementById('type-html').checked) {
+                            var ck_title=document.getElementById('title').value;
+                            document.getElementById('docx_up').setAttribute("action", "/create_template/"+ck_title);
+                        }
+                        else if (document.getElementById('type-docx').checked)
+                        {
+                            document.getElementById('docx_up').setAttribute("action", "/upload_docx");
+
+                        }
+    };
+    function isDisable() {
+    if (document.getElementById('type-html').checked){
+         document.getElementById('title').removeAttribute('disabled');
+         }
+    else if(document.getElementById('type-docx').checked)
+         {
+              document.getElementById('title').setAttribute('disabled', true);
+         }
+    };
+</script>
+<script>
+    $(document).ready(function() {
+    document.getElementById("lhs-home").className = "active lhs-item"
+    });
+</script>
+{% endblock %}

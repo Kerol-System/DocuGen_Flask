@@ -24,7 +24,7 @@ class PanTSFHandler:
 
     def __init__(self, input_path, tmp_path, my_separator):
         """Make a set of PAN devices from the file at the input path."""
-        self.input_path = input_path  # an empty string, we get this from itemplate1.py
+        self.input_path = input_path  # an empty string, we get this from helper.py
         self.tmp_path = tmp_path
         self.my_separator = my_separator
 
@@ -148,7 +148,8 @@ class PanTSFHandler:
         else:
             tsf_info["hapriority"] = self.get_tsf_ha_panorama_info()
             tsf_info["mgmtinfo"] = self.get_tsf_info("mgmtinfopn")
-            tsf_info["templates"] = self.get_tsf_info("templates")
+            tsf_info["templates"] = self.get_tsf_info("templates")  # list of dictionaries
+            tsf_info["templates_prisma"] = self.get_tsf_info("templates_for_prisma")
             tsf_info["devicegroups"] = self.get_tsf_info("devicegroups")
             tsf_info["admins"] = self.get_tsf_info("adminspn")
             tsf_info["logforwarding"] = ""
@@ -206,7 +207,7 @@ class PanTSFHandler:
                         if match:
                             # logger.debug("Adding line to match_string: %s", line.rstrip())
                             match_string = (
-                                match_string + line
+                                    match_string + line
                             )  # line.rstrip() # remove this strip so the text wouldnt be a giant blob
                             # logger.debug("The match_string is %s", match_string)
         except Exception as e:
@@ -243,32 +244,32 @@ class PanTSFHandler:
     def get_tsf_info(self, which_info):
         """Get various info from TSF file."""
         # logger.debug("Starting get_tsf_info with tmp_path: %s", self.tmp_path)
-        filename = "dummy"
 
         if (
-            which_info == "mgmtinfopn"
-            or which_info == "templates"
-            or which_info == "devicegroups"
-            or which_info == "adminspn"
-            or which_info == "hapriority"
+                which_info == "mgmtinfopn"
+                or which_info == "templates"
+                or which_info == "devicegroups"
+                or which_info == "adminspn"
+                or which_info == "hapriority"
+                or which_info == "templates_for_prisma"
         ):
             filename = (
-                self.tmp_path + "opt/pancfg/mgmt/saved-configs/running-config.xml"
+                    self.tmp_path + "opt/pancfg/mgmt/saved-configs/running-config.xml"
             )
             # logger.debug("Setting XML filename: %s", filename)
         elif (
-            which_info == "snmpv2mp"
-            or which_info == "snmpv2sp"
-            or which_info == "snmpv3p"
+                which_info == "snmpv2mp"
+                or which_info == "snmpv2sp"
+                or which_info == "snmpv3p"
         ):
             filename = (
-                self.tmp_path + "opt/pancfg/mgmt/saved-configs/running-config.xml"
+                    self.tmp_path + "opt/pancfg/mgmt/saved-configs/running-config.xml"
             )
             # logger.debug("Setting XML filename: %s", filename)
         else:
             filename = (
-                self.tmp_path
-                + "opt/pancfg/mgmt/saved-configs/.merged-running-config.xml"
+                    self.tmp_path
+                    + "opt/pancfg/mgmt/saved-configs/.merged-running-config.xml"
             )
             # logger.debug("Setting XML filename: %s", filename)
 
@@ -319,6 +320,8 @@ class PanTSFHandler:
                 dict_list = my_xml_handler.get_logforwarding()
             elif which_info == "templates":
                 dict_list = my_xml_handler.get_templates()
+            elif which_info == "templates_for_prisma":
+                dict_list = my_xml_handler.get_templates_for_prisma()
             elif which_info == "devicegroups":
                 dict_list = my_xml_handler.get_devicegroups()
             elif which_info == "snmpv2m":
@@ -374,10 +377,10 @@ class PanTSFHandler:
         """ """
         logger.debug("Starting get_tsf_ha_info()")
         config_path = (
-            self.tmp_path
-            + "tmp/"
-            + self.date_string
-            + "/opt/pancfg/mgmt/saved-configs/.merged-running-config.xml"
+                self.tmp_path
+                + "tmp/"
+                + self.date_string
+                + "/opt/pancfg/mgmt/saved-configs/.merged-running-config.xml"
         )
         sdb_path = self.tmp_path + "tmp/" + self.date_string + "/tmp/cli/logs/sdb.txt"
         ha = self.cli_output_check(

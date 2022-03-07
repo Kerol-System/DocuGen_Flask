@@ -1,0 +1,109 @@
+
+/* Customer info */
+#id_customername {
+
+   width: 65%;
+   font-size: 1.6rem;
+}
+#image{
+
+   width: 65%;
+   font-size: 1.6rem;
+
+}
+
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    font-size:18px;
+    /* color: #212529; */
+    text-align: center;
+    vertical-align: middle;
+    }
+
+
+/* generate_report */
+#id_reportname {
+
+   width: 65%;
+   font-size: 1.6rem;
+}
+
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    font-size:18px;
+    /* color: #212529; */
+    text-align: center;
+    vertical-align: middle;
+    }
+
+ /* select_template */
+    .content-wrapper {
+    background-color:#fff;
+    }
+    .btn {
+    display: inline-block;
+    font-weight: 400;
+    font-size:20px;
+    /* color: #212529; */
+    text-align: center;
+    vertical-align: middle;
+    font-family: "Tahoma";
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow{
+    height:30px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+        height:0px !important;
+    }
+
+
+ /* upload_tsf_file */
+    .content-wrapper {
+    background-color:#fff;
+    }
+    .isDisabled {
+  color: currentColor;
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+  text-decoration: none;
+}
+.btn {
+    display: inline-block;
+    font-size:18px;
+    /* color: #212529; */
+    text-align: center;
+    vertical-align: middle;
+    background-color: #f2ae31 !important;
+    color: #181818 !important;
+    font-family: "Tahoma";
+    font-weight: 200;
+     cursor: pointer;
+    display: inline-block;
+    min-height: 1em;
+    letter-spacing: 0.1px;
+    flex-direction: column;
+    vertical-align: middle;
+    }
+
+    .btn2 {
+    display: inline-block;
+    font-size: 18px;
+    /* color: #212529; */
+    text-align: center;
+    vertical-align: middle;
+    background-color: #d2d6de !important;
+    color: #181818 !important;
+    font-family: "Tahoma";
+    font-weight: 200;
+    cursor: pointer;
+    display: inline-block;
+    min-height: 1em;
+    letter-spacing: 0.1px;
+    flex-direction: column;
+    vertical-align: middle;
+}

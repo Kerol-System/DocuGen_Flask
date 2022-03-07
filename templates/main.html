@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html style="height: auto; min-height: 100%;">
+<head>
+    <title> Flask Swiftdoc-1.0 </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="documerge static files">
+    <meta name="keywords" content="">
+    <meta name="apple-mobile-web-app-title" content="Documerge">
+    <meta name="application-name" content="Documerge">
+    <meta name="theme-color" content="#3d89ff">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/adhara@1.5.47/cdn/css/adhara.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/a.m.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://js.chargebee.com/v2/animation.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.js"></script>
+    <link href="https://wchat.freshchat.com/css/widget.css?t=1643098239451" rel="stylesheet">
+    <script src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" data-auto-replace-svg="nest"></script>
+    <script charset="utf-8" src="https://js.chargebee.com/v2/60-ebf05957172d9ca297d4.js"></script>
+    <script charset="utf-8" src="https://js.chargebee.com/v2/0-d0d07a1ccb393c1835b4.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script charset="utf-8" src="{{ url_for('static', filename='js/3.m.js')}}"></script>
+    <script charset="utf-8" src="{{ url_for('static', filename='js/a.m.es5.js')}}"></script>
+    <script src="https://js.chargebee.com/v2/chargebee.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/adhara@1.5.47/cdn/js/adhara.min.es5.js"></script>
+    <script async="" src="https://sdk.noticeable.io/l.js"></script>
+    <script src="https://wchat.freshchat.com/js/widget.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+</head>
+<style>
+	div#dmio-wrapper.wrapper aside.main-sidebar div.logo
+	 {
+		background-color:white ;
+	 }
+</style>
+<body class="skin-blue sidebar-mini" style="height: auto; min-height: 100%;">
+    <input type="hidden" name="csrfmiddlewaretoken" value="f8YR4COjjJwoqcbMAngCzOfcPta5IrElSCqkhrjD60tgdhJIjnO834tElHg5ukvZ">
+    <div id="app">
+        <div id="dmio-wrapper" class="wrapper container-wrapper reveal" style="height:auto;">
+            <header class="main-header">
+                <nav class="navbar navbar-/static-top">
+                <a class="sidebar-toggle center-header" data-toggle="push-menu" role="button" data-_ae_click_="true" >
+                    <div class="hamburger"></div>
+                    <span class="sr-only"><!--Toggle navigation--></span>
+                </a>
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav" id="header-user">
+                        <li class="usage">
+                            <div class="dropdown user user-menu" >
+                            </div>
+                        </li>
+                        <li class="dropdown user user-menu">
+                            <a href="javascript:void(0);" class="center-header" data-toggle="overflow-menu" onclick="showUserContextMenu()" data-_ae_click_="true">
+                                {% if  'username' in session %}
+                                <span>
+                                    {{ session['username'][0] }}
+                                </span>
+                                {% endif %}
+                            </a>
+                            <div class="overflow-menu menu1">
+                                <div class="overflow-item" href="javascript:void(0);" route="">
+                                    {% if  'username' in session %}
+                                    <i class="fa fa-user" aria-hidden="true"></i>&nbsp;{{ session['username'] }}
+                                    {% endif %}
+                                </div>
+                                <a href="/logout" style="position: initial;display: contents; text-decoration: none; color: #333 !important;">
+                                    <div class="overflow-item"  data-onclick="logout" data-_ae_click_="true">
+                                        <i class="fas fa-sign-out-alt"></i>&nbsp; Sign out
+                                    </div>
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            </header>
+            <aside  class="main-sidebar">
+                <div class="logo">
+                    <span class="logo-mini"></span>
+                    <span class="logo-lg">
+                       <h1 style="text-align:center;color:white;margin-top: 0px;">
+                           <img src="/static/img/palo2.png" alt="" width="220" height="35" style="background-color: white;">
+                       </h1>
+                    </span>
+                </div>
+                <section class="sidebar" style="height: auto;">
+                    <ul class="sidebar-menu">
+                        <li>&nbsp;</li>
+                        {% if session['usertype'] == 2 %}
+                        <li id="lhs-home" class="lhs-item">
+                            <a href="/">
+                                <i class="dmio-icon fas fa-file template-icon"></i>
+                                <span>Templates</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li id="lhs-reports" class="lhs-item">
+                            <a href="/select_template">
+                                <i class="dmio-icon fas fa-chart-bar"></i>
+                                <span>Reports</span>
+                            </a>
+                        </li>
+                        <li id="lhs-settings" class="lhs-item">
+                            <a href="/streaming">
+                                <i class="dmio-icon fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </section>
+                <footer class="main-footer">
+                    <div class="hidden-xs">
+                        <b>Swift-Doc v2.0</b>
+                    </div>
+                    <div class="hidden-xs">
+                    </div>
+                    <small>Email:
+                      <a href=""> support@palonetworks.com </a>
+                    </small>
+                    <br>
+                    <small>Phone No:
+                    <a href=""> +91-9999912345 </a>
+                    </small>
+                    <br>
+                    <small>Slack :
+                        <a href=""> panw-global.slack.com </a>
+                    </small>
+                </footer>
+            </aside>
+            {% block content %}
+	        {% endblock %}
+            <script>
+                function showUserContextMenu() {
+                    $('.menu1').toggleClass("active");
+                }
+                </script>
+        </div>
+    </div>
+</body>
+</html>

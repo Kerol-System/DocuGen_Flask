@@ -1,23 +1,23 @@
-<link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+
 <header id="navbar">
     <nav class="navbar-container container">
-        <a href="/" class="home-link">
+        <a href="/select_template" class="home-link">
         Flask-Swiftdoc-1.0
         </a>
         <button type="button" id="navbar-toggle" aria-controls="navbar-menu" aria-label="Toggle menu" aria-expanded="false">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
         </button>
         <div id="navbar-menu" aria-labelledby="navbar-toggle">
             <ul class="navbar-links">
-              <li class="navbar-item"><a class="navbar-link" href="/" title="Home">Home</a></li>
-              {% if not g.user %}
-              <li class="navbar-item"><a class="navbar-link" href="/login">Login</a></li>
-              {% else %}
-            <li class="navbar-item"><a class="navbar-link" href="/dashboard">Dashboard</a></li>
-            <li class="navbar-item"><a class="navbar-link" href="/logout">Logout</a></li>
-            {% endif %}
+                <li class="navbar-item"><a class="navbar-link" href="/" title="Home">Home</a></li>
+                {% if not g.user %}
+                <li class="navbar-item"><a class="navbar-link" href="/login">Login</a></li>
+                {% else %}
+                <li class="navbar-item"><a class="navbar-link" href="/dashboard">Dashboard</a></li>
+                <li class="navbar-item"><a class="navbar-link" href="/logout">Logout</a></li>
+                {% endif %}
             </ul>
         </div>
     </nav>

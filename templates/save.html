@@ -1,0 +1,73 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="content-wrapper" id="content-wrapper" style="min-height: 41px;">
+    <section class="content">
+        <div id="main-content"><div class="row document-details-wrapper">
+            <div class="col-md-9 h100" id="document-details">
+                <div class="document-details row h100">
+                    <div class="col-md-3">
+                        <div class="details-navigation-container">
+                            <ol class="box-title breadcrumb ellipsis">
+                                <li>
+                                    <a href="/" route="">
+                                        <i class="fas fa-home" title="Home" data-toggle="tooltip" data-placement="auto left"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    Template Title
+                                </li>
+                            </ol>
+                            <div id="details-navigation">
+                                <div class="doc-timeline">
+                                    <div class="level-zero">
+                                        <div class="circle-graphic delivery-icon html">
+                                        </div>
+                                        <div class="level-info">
+                                            <div class="tab-brief">Template Details</div>
+                                            <div class="level-one ellipsis">
+                                                <a href="/create_template" class=" tab-name" title="Edit document">
+                                                    <i class="dmio-icon fas fa-pencil-alt"></i>Editor
+                                                </a>
+                                            </div>
+                                            <div class="level-one ellipsis active">
+                                                <a href="/save" class=" tab-name" title="Create Documents by integrating with other apps or by using data-capture form">
+                                                    <i class="dmio-icon fas fa-bolt"></i>Save</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9" id="details-content" data-select2-id="details-content"><div class="row doc-preferences-wrapper mt-3" data-select2-id="17">
+                        <div class="col-sm-offset-1 col-sm-10" data-select2-id="16">
+                            <form action="/save" method="post" class="form-horizontal" data-_ae_="true" data-select2-id="15">
+                                <div class="form-group">
+                                    <label for="title" class="col-sm-2 control-label">Title</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" name="title" maxlength="50" id="title" required="" placeholder="Template Title" value="">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description" class="col-sm-2 control-label">Description</label>
+                                    <div class="col-sm-10">
+                                        <textarea class="form-control" name="description" maxlength="255" id="description" placeholder="Template Description"></textarea>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="form-group">
+                                    <div class="col-sm-offset-2 col-sm-10">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

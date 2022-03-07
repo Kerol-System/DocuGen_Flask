@@ -1,0 +1,61 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<div class="content-wrapper" id="content-wrapper" style="min-height: 248px;">
+    <section class="content">
+        <div id="main-content">
+            <div class="row document-details-wrapper">
+                <div class="col-md-9 h100" id="document-details">
+                    <div class="document-details row h100">
+                        <div class="col-md-3">
+                            <div class="details-navigation-container">
+                                <ol class="box-title breadcrumb ellipsis">
+                                    <li>
+                                        <a href="/templates" route="">
+                                            <i class="fas fa-home" title="" data-toggle="tooltip" data-placement="auto left" data-original-title="Home"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        sad
+                                    </li>
+                                </ol>
+                                <div id="details-navigation">
+                                    <div class="doc-timeline">
+                                        <div class="level-zero">
+                                            <div class="circle-graphic delivery-icon docx"></div>
+                                            <div class="level-info">
+                                                <div class="tab-brief">Template Details</div>
+                                                <div class="level-one ellipsis active">
+                                                    <i class="dmio-icon fas fa-bolt"></i>Upload Template
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9" id="details-content">
+                            <div class="document-file-container">
+                                <div class="row">
+                                    <div class="col-md-12 upload-empty">
+                                        <form action="/upload_docx" method="post" enctype="multipart/form-data" data-_ae_="true">
+                                            <h3>Upload the Template</h3>
+                                            <div class="form-group">
+                                                <input type="file" class="form-control" name="file" accept="application/vnd.openxmlformats-officedocument.wordprocessingml.document" placeholder="Attach new docx" required="">
+                                            </div>
+                                          
+                                            <div class="form-group">
+                                                <input type="submit" value="Upload" class="btn btn-primary pull-left">
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

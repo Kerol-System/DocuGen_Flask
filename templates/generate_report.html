@@ -1,65 +1,53 @@
-<!doctype html>
-<title>Flask Swiftdoc-1.0</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+{% extends 'report.html' %}
+{% block select %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main2.css') }}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.js"></script>
-</head>
-<body>
-{% include 'header.html' %}
-<br><br><br>
-    <div class="table-title">
-        <h2>
-            <b> Report  Generator </b>
-            Generate Report  by uploading Only   (.tgz or .xml ) Files.
-        </h2>
-    </div>
-
-<div class="tab">
-    <button class="tablinks" >
-      <a href="/" style="text-decoration:none;color: black;">
-           Step1: Select Template Inputs
-      </a>
-    </button>
-    <button class="tablinks" onclick="openCity(event, 'Tsf')" disabled>Step2: Upload TSF File</button>
-    <button class="tablinks" onclick="openCity(event, 'Customer')" disabled>Step3: Customer Info</button>
-    <button class="tablinks" onclick="openCity(event, 'Report')"id="defaultOpen">Step4: Generate Report</button>
-    <button class="tablinks" >
-        <a href="/streaming" style="text-decoration:none;color: black;">
-            <i class="fa fa-cog" style="font-size:18px;"> </i> Settings
-        </a>
-    </button>
-</div>
-
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<style>
+    .container {
+padding-right: 15px;
+padding-left: 0px;
+margin-right: auto;
+margin-left: auto;
+}
+</style>
 <div id="Report" class="tabcontent">
-   <h3>Generated Report </h3>
+    <h2 style="font-family: &quot;Source Sans Pro&quot;;letter-spacing: 0.1px;"><b>Generate Report</b>  </h2>
+    <br>
     <form action="/report" method="post" id="form_gen">
         <div class="row">
-            <div class="col-sm-3">
+            <div class="col-sm-7">
                 <div class="form-group">
-                    <label> Report Name </label>
-                        <a  href="#" data-toggle="tooltip" title=" Alphabetical Characters <=35 , Numeric & Special characters except _  not allowed"  >
-                            <i  class="fa fa-info-circle " style="font-size:18px;"> </i>
-                        </a>
-                        <input type="text" name="reportname" maxlength="35" id="id_reportname" class="form-control" required="" onchange="validate();" >
+                    <label> <b> Report Name</b> </label>
+<!--                     <i  class="fa fa-info-circle " class="btn" data-toggle="popover"  data-content="Alphabetical Characters <=35 , Numeric & Special characters except _  not allowed" style="font-size:20px;"></i>-->
+
+                        <input title="Alphabetical Characters <=35 , Numeric & Special characters not allowed" placeholder="Enter Report Name" name="reportname" maxlength="35" id="id_reportname" class="form-control" required="" onchange="validate();" >
                 </div>
             </div>
-            <br>
-            <div class="container" style="margin: 0px 0px 0px -22px;">
-                <button value="" class="btn btn-light" onclick="history.go(-1)"><i class="fa fa-arrow-left"  style="font-size:18px;" >Back</i></button>
-                <button type="submit" class="btn btn-warning " id="gen">Generate</button>
-                <a href="/download" id="download" title="Download the Generated Report" class="btn btn-success" style="visibility: hidden">
-                    <i class="fa fa-download"  style="font-size:18px;" > Download</i>
+
+        </div>
+ <br>
+            <div class="container">
+                <button type="button" id="back" value="" class="btn btn-light" style="visibility: visible;" onclick="history.go(-1)">Back</button>
+                <button type="submit" class="btn btn-warning " style="font-size:18px; visibility: visible" id="gen">Generate</button>
+            </div>
+
+           <div class="container">
+                <a href="/preview" id="preview" target="_blank" title="Preview the Generated Report" class="btn btn-success" style="visibility: hidden">
+                    <i class="fa fa-eye"  style="font-size:18px;" ></i> Preview
                 </a>
-                <a href="/preview" id="preview" title="Preview the Generated Report" class="btn btn-success" style="visibility: hidden">
-                    <i class="fa fa-eye"  style="font-size:18px;" > Preview</i>
+                <a href="/download" id="download" title="Download the Generated Report" class="btn btn-success" style="visibility: hidden">
+                    <i class="fa fa-download"  style="font-size:18px;" ></i> Download
+                </a>
+               <a href="/select_template" id="exit" target="" title="exit" class="btn btn-light" style="visibility: hidden">
+                    <i class="" style="font-size:18px;" ></i>Exit
                 </a>
             </div>
-        </div>
+            <br>
+
     </form>
 </div>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -74,7 +62,7 @@
     message: 'Numbers,_,starting with space & _ , special characters is not allowed',
                 progressBar: false,
                 color: 'red',
-                position: 'center',
+                position: 'topCenter',
                 pauseOnHover:false,
 });
         id_reportname.value = '';
@@ -83,22 +71,6 @@
         return true;
     }
     }
-function openCity(evt, cityName) {
-  var i, tabcontent, tablinks;
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-  document.getElementById(cityName).style.display = "block";
-  evt.currentTarget.className += " active";
-}
-
-// Get the element with id="defaultOpen" and click on it
-document.getElementById("defaultOpen").click();
 </script>
 {% with messages = get_flashed_messages() %}
 {% if messages %}
@@ -135,13 +107,7 @@ document.getElementById("defaultOpen").click();
         $('#gen').click(function () {
             var name = document.getElementById('id_reportname').value;
     if(name==='') {
-        iziToast.show({
-    title: 'Invalid Report Name',
-                progressBar: false,
-                color: 'red',
-                position: 'center',
-                pauseOnHover:false,
-});
+
         document.getElementById('id_reportname').value='';
         return false;
     }
@@ -164,20 +130,21 @@ document.getElementById("defaultOpen").click();
              var duration = 15000;
          var percent = duration / 100; // 1 percent of duration
                  var i = 0 ;
-Swal.fire({
-  title: 'Kindly be patient',
-  html: '<b></b> completed.',
-  timer: duration,
-  timerProgressBar: true,
-  didOpen: () => {
+    Swal.fire({
+    title: 'Kindly be patient',
+    html: '<b></b> completed.',
+    timer: duration,
+    timerProgressBar: true,
+    allowOutsideClick: false,
+    didOpen: () => {
     Swal.showLoading()
     const b = Swal.getHtmlContainer().querySelector('b')
     timerInterval = setInterval(() => {
-i++;
-              b.textContent = i+"%";
+    i++;
+    b.textContent = i+"%";
     }, percent)
-  },
-  willClose: () => {
+    },
+    willClose: () => {
     if(i>=100) {
         clearInterval(timerInterval)
     }
@@ -188,9 +155,23 @@ i++;
     console.log('I was closed by the timer')
   }
 })
-            document.getElementById("download").style.visibility = 'visible';
-                        document.getElementById("preview").style.visibility = 'visible';
-
+    document.getElementById("download").style.visibility = 'visible';
+    document.getElementById("preview").style.visibility = 'visible';
+        document.getElementById("exit").style.visibility = 'visible';
+        document.getElementById("gen").style.visibility = 'hidden';
+        document.getElementById("back").style.visibility = 'hidden';
 });
 })
 </script>
+<script>
+$(document).ready(function() {
+    document.getElementById("step4").className = "tablinks active"
+    });
+</script>
+<script>
+$(document).ready(function(){
+  $('[data-toggle="popover"]').popover();
+});
+</script>
+
+{% endblock %}

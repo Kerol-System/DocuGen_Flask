@@ -20,12 +20,10 @@ class PaloBaseClass(ABC):
     @abstractmethod
 """
 
-# class PaloPanorama(PaloBaseClass):
+
 class PaloPanorama:
     """Class representing a Panorama entry."""
-
     panorama_models = ["Panorama", "M-100", "M-500", "M-200", "M-600"]
-
     mgmtinfo = {}
     model = ""
     panos = ""
@@ -37,6 +35,7 @@ class PaloPanorama:
     hapeername = ""
     haotherinfo = {}
     templates = []
+    templates_prisma = []
     devicegroups = []
     snmpv2_manager = []
     snmpv2_system = []

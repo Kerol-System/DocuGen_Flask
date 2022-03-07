@@ -58,7 +58,7 @@ class PanXMLHandler:
                 userid_dict_list.append(dict(userid_dict))
         # Server Monitoring
         for agent in self.config_root.findall(
-            ".//user-id-collector/server-monitor/entry"
+                ".//user-id-collector/server-monitor/entry"
         ):
             source = "Server Monitoring"
             if agent.find("./active-directory/host"):
@@ -147,13 +147,14 @@ class PanXMLHandler:
 
     def get_snmpv2_manager(self):
         """ """
+        global version, manager_ip, manager_name, manager_community
         snmpv2_dict = {}
         snmpv2_dict_list = []
         manager_ip = ""
         manager_name = ""
         manager_community = ""
         for snmpv2p in self.config_root.findall(
-            ".//shared/log-settings/snmptrap/entry"
+                ".//shared/log-settings/snmptrap/entry"
         ):
             profile_name = snmpv2p.attrib["name"]
             version = snmpv2p.find("./version/").tag
@@ -222,7 +223,7 @@ class PanXMLHandler:
         gpp_dict_list = []
 
         for portal in self.config_root.findall(
-            ".//global-protect/global-protect-portal/entry"
+                ".//global-protect/global-protect-portal/entry"
         ):
             interface = portal.find("./portal-config/local-address/interface")
             if interface:
@@ -250,11 +251,11 @@ class PanXMLHandler:
                 agent_profiles = "Any"
             gateways = ""
             for gateway in portal.findall(
-                "./client-config/configs//gateways/internal/list/entry"
+                    "./client-config/configs//gateways/internal/list/entry"
             ):
                 gateways = gateways + gateway.attrib["name"] + "\n"
             for gateway in portal.findall(
-                "./client-config/configs//gateways/external/list/entry"
+                    "./client-config/configs//gateways/external/list/entry"
             ):
                 gateways = gateways + gateway.attrib["name"] + "\n"
 
@@ -272,7 +273,7 @@ class PanXMLHandler:
         gpg_dict_list = []
 
         for gateway in self.config_root.findall(
-            ".//global-protect/global-protect-gateway/entry"
+                ".//global-protect/global-protect-gateway/entry"
         ):
             interface = ""
             dhcp_pool = ""
@@ -284,7 +285,7 @@ class PanXMLHandler:
 
             if tunnel_mode == "yes":
                 for gw in self.config_root.findall(
-                    ".//tunnel/global-protect-gateway/entry"
+                        ".//tunnel/global-protect-gateway/entry"
                 ):
                     if gateway_name + "-N" == gw.attrib["name"]:
                         address_ipv4 = gw.find(".//local-address/ip/ipv4")
@@ -341,7 +342,7 @@ class PanXMLHandler:
         """ """
         logintsettings = {}
         for interface in self.config_root.findall(
-            ".//network/interface/ethernet//entry"
+                ".//network/interface/ethernet//entry"
         ):
             logint = interface.find("./log-card")
             if logint:
@@ -384,7 +385,7 @@ class PanXMLHandler:
         snmpv3_dict = {}
         snmpv3_dict_list = []
         for view in self.config_root.findall(
-            ".//system/snmp-setting/access-setting/version/v3/views/entry"
+                ".//system/snmp-setting/access-setting/version/v3/views/entry"
         ):
             snmpv3_dict["name"] = view.attrib["name"]
             for entry in view.findall("./view/entry"):
@@ -405,7 +406,7 @@ class PanXMLHandler:
                 else:
                     snmpv3_dict["option"] = "Not Configured"
         for user in self.config_root.findall(
-            ".//system/snmp-setting/access-setting/version/v3/users/entry"
+                ".//system/snmp-setting/access-setting/version/v3/users/entry"
         ):
             snmpv3_dict["users"] = user.attrib["name"]
             for view in user.findall("./view"):
@@ -420,7 +421,7 @@ class PanXMLHandler:
         lf_dict_list = []
 
         for lfp in self.config_root.findall(
-            ".//devices//vsys//log-settings/profiles//match-list/entry"
+                ".//devices//vsys//log-settings/profiles//match-list/entry"
         ):
             snmp = ""
             syslog = ""
@@ -452,9 +453,10 @@ class PanXMLHandler:
             templates_dict["stack_name"] = ""
             templates_dict["members"] = ""
             templates_dict_list.append(dict(templates_dict))
+
         templates_dict = {}
         for template_stack in self.config_root.findall(
-            ".//devices/entry/template-stack/entry"
+                ".//devices/entry/template-stack/entry"
         ):
             if template_stack.find("./id"):
                 continue
@@ -467,7 +469,40 @@ class PanXMLHandler:
             templates_dict_list.append(dict(templates_dict))
         return templates_dict_list
 
+    def get_templates_for_prisma(self):
+        global temp1, temp2
+        temp1 = []
+        temp2 = []
+        prismatemplates_dict = {}
+        templates_prisma_dict_list = []
+
+        for template in self.config_root.findall(".//devices/entry/template/entry"):
+            if template.find("./id"):
+                continue
+            # prismatemplates_dict["template_name"] = template.attrib["name"]
+            # templates_dict_list.append(dict(prismatemplates_dict))
+            temp1.append(template.attrib["name"])
+
+        for template_stack in self.config_root.findall(
+                ".//devices/entry/template-stack/entry"
+        ):
+            if template_stack.find("./id"):
+                continue
+            # prismatemplates_dict["stack_name"] = template_stack.attrib["name"]
+            # templates_dict_list.append(dict(prismatemplates_dict))
+            temp2.append(template_stack.attrib["name"])
+
+        if len(temp1) == len(temp2):
+            for i in range(len(temp1)):
+                prismatemplates_dict["template_name"] = temp1[i]
+                prismatemplates_dict["stack_name"] = temp2[i]
+                templates_prisma_dict_list.append(dict(prismatemplates_dict))
+        else:
+            print("Error while matching template name and stack name")
+        return templates_prisma_dict_list
+
     def get_devicegroups(self):
+
         """ """
         devicegroups_dict = {}
         devicegroups_dict_list = []
@@ -478,7 +513,7 @@ class PanXMLHandler:
         devicegroups_dict["master"] = ""
         devicegroups_dict_list.append(dict(devicegroups_dict))
         for devicegroup in self.config_root.findall(
-            ".//readonly/devices/entry/device-group/entry"
+                ".//readonly/devices/entry/device-group/entry"
         ):
             if devicegroup.find("./parent-dg") is None:
                 devicegroups_dict = {}
@@ -488,7 +523,7 @@ class PanXMLHandler:
                 devicegroups_dict["tier3"] = ""
                 devicegroups_dict["tier4"] = ""
                 for dg in self.config_root.findall(
-                    ".//devices/entry/device-group/entry"
+                        ".//devices/entry/device-group/entry"
                 ):
                     if dg.find("./id"):
                         continue
@@ -501,11 +536,11 @@ class PanXMLHandler:
                         devicegroups_dict["master"] = master
                 devicegroups_dict_list.append(dict(devicegroups_dict))
                 for devicegroup in self.config_root.findall(
-                    ".//readonly/devices/entry/device-group/entry"
+                        ".//readonly/devices/entry/device-group/entry"
                 ):
                     if (
-                        devicegroup.find("./parent-dg")
-                        and devicegroup.find("./parent-dg").text == tier2
+                            devicegroup.find("./parent-dg")
+                            and devicegroup.find("./parent-dg").text == tier2
                     ):
                         devicegroups_dict = {}
                         tier3 = devicegroup.attrib["name"]
@@ -514,7 +549,7 @@ class PanXMLHandler:
                         devicegroups_dict["tier3"] = tier3
                         devicegroups_dict["tier4"] = ""
                         for dg in self.config_root.findall(
-                            ".//devices/entry/device-group/entry"
+                                ".//devices/entry/device-group/entry"
                         ):
                             if dg.find("./id"):
                                 continue
@@ -527,11 +562,11 @@ class PanXMLHandler:
                                 devicegroups_dict["master"] = master
                         devicegroups_dict_list.append(dict(devicegroups_dict))
                         for devicegroup in self.config_root.findall(
-                            ".//readonly/devices/entry/device-group/entry"
+                                ".//readonly/devices/entry/device-group/entry"
                         ):
                             if (
-                                devicegroup.find("./parent-dg")
-                                and devicegroup.find("./parent-dg").text == tier3
+                                    devicegroup.find("./parent-dg")
+                                    and devicegroup.find("./parent-dg").text == tier3
                             ):
                                 devicegroups_dict = {}
                                 tier4 = devicegroup.attrib["name"]
@@ -540,7 +575,7 @@ class PanXMLHandler:
                                 devicegroups_dict["tier3"] = ""
                                 devicegroups_dict["tier4"] = tier4
                                 for dg in self.config_root.findall(
-                                    ".//devices/entry/device-group/entry"
+                                        ".//devices/entry/device-group/entry"
                                 ):
                                     if dg.find("./id"):
                                         continue
@@ -585,7 +620,7 @@ class PanXMLHandler:
         ike_crypto_dict = {}
         ike_crypto_dict_list = []
         for elem in self.config_root.findall(
-            ".//ike/crypto-profiles/ike-crypto-profiles/entry"
+                ".//ike/crypto-profiles/ike-crypto-profiles/entry"
         ):
             dhgroup = ""
             authentication = ""
@@ -603,7 +638,7 @@ class PanXMLHandler:
             ike_crypto_dict["encryption"] = encryption
             if elem.find("./lifetime/") is not None:
                 ike_crypto_dict["keylifetime"] = (
-                    elem.find("./lifetime/").text + " " + elem.find("./lifetime/").tag
+                        elem.find("./lifetime/").text + " " + elem.find("./lifetime/").tag
                 )
             else:
                 ike_crypto_dict["keylifetime"] = "Not Used"
@@ -620,7 +655,7 @@ class PanXMLHandler:
         ipsec_crypto_dict = {}
         ipsec_crypto_dict_list = []
         for elem in self.config_root.findall(
-            ".//ike/crypto-profiles/ipsec-crypto-profiles/entry"
+                ".//ike/crypto-profiles/ipsec-crypto-profiles/entry"
         ):
             dhgroup = ""
             authentication = ""
@@ -638,11 +673,11 @@ class PanXMLHandler:
             ipsec_crypto_dict["authentication"] = authentication
             ipsec_crypto_dict["encryption"] = encryption
             ipsec_crypto_dict["lifetime"] = (
-                elem.find("./lifetime/").text + " " + elem.find("./lifetime/").tag
+                    elem.find("./lifetime/").text + " " + elem.find("./lifetime/").tag
             )
             if elem.find("./lifesize/"):
                 ipsec_crypto_dict["lifesize"] = (
-                    elem.find("./lifesize/").text + " " + elem.find("./lifesize/").tag
+                        elem.find("./lifesize/").text + " " + elem.find("./lifesize/").tag
                 )
             else:
                 ipsec_crypto_dict["lifesize"] = "Not Used"
@@ -651,13 +686,14 @@ class PanXMLHandler:
 
     def get_ike_gw(self):
         """Function to get IKE gateway details"""
+
         ike_gw_dict = {}
         ike_gw_dict_list = []
         for elem in self.config_root.findall(".//ike/gateway/entry"):
             ike_gw_dict["ike_gw"] = elem.attrib["name"]
             authentication = elem.find("./authentication/").tag
             ike_gw_dict["authentication"] = authentication
-            protocol = ""
+            # protocol = ""
             for child in elem.findall("./protocol/"):
                 if child.tag == "version":
                     ikeversion = elem.find("./protocol/version").text
@@ -718,8 +754,8 @@ class PanXMLHandler:
             ipsec_vpn_dict["tunnel_interface"] = elem.find(".//tunnel-interface").text
             if elem.find(".//tunnel-monitor/enable") is not None:
                 ipsec_vpn_dict["options"] = (
-                    "Tunnel Monitoring Enabled = "
-                    + elem.find(".//tunnel-monitor/enable").text
+                        "Tunnel Monitoring Enabled = "
+                        + elem.find(".//tunnel-monitor/enable").text
                 )
             else:
                 ipsec_vpn_dict["options"] = "Tunnel Monitoring Not Enabled"
@@ -740,13 +776,13 @@ class PanXMLHandler:
                         else "Not Configured"
                     )
                     proxy_id = (
-                        proxy_id
-                        + child.attrib["name"]
-                        + " (Local: "
-                        + proxy_id_local
-                        + ", Remote: "
-                        + proxy_id_remote
-                        + ")\n"
+                            proxy_id
+                            + child.attrib["name"]
+                            + " (Local: "
+                            + proxy_id_local
+                            + ", Remote: "
+                            + proxy_id_remote
+                            + ")\n"
                     )
             ipsec_vpn_dict["proxy_id"] = proxy_id
             ip_type = elem.find(".//ipv6")
@@ -831,7 +867,7 @@ class PanXMLHandler:
             else:
                 for vr1 in vsys.findall("./import/network/virtual-router/member"):
                     for vr2 in self.config_root.findall(
-                        ".//network/virtual-router/entry"
+                            ".//network/virtual-router/entry"
                     ):
                         bgp = ""
                         ospf = ""
@@ -1001,10 +1037,10 @@ class PanXMLHandler:
             as_dns_sinkhole = elem.find(".//botnet-domains//lists//entry")
             if as_dns_sinkhole:
                 as_dns_sinkhole = (
-                    "Server: "
-                    + as_dns_sinkhole.attrib["name"]
-                    + "\n Action: "
-                    + elem.find(".//botnet-domains//lists//entry//action//").tag
+                        "Server: "
+                        + as_dns_sinkhole.attrib["name"]
+                        + "\n Action: "
+                        + elem.find(".//botnet-domains//lists//entry//action//").tag
                 )
             as_dict["as_profile_name"] = as_prof_name
             as_dict["as_severity"] = as_severity
@@ -1106,7 +1142,7 @@ class PanXMLHandler:
         fb_dict = {}
         fb_dict_list = []
         for elem in self.config_root.findall(
-            ".//profiles//file-blocking//entry//rules/entry"
+                ".//profiles//file-blocking//entry//rules/entry"
         ):
             fb_rule_name = elem.attrib["name"]
             filetype = ""
@@ -1164,10 +1200,10 @@ class PanXMLHandler:
             if type:
                 for int_type in type:
                     if (
-                        int_type.tag == "comment"
-                        or int_type.tag == "link-state"
-                        or int_type.tag == "link-speed"
-                        or int_type.tag == "link-duplex"
+                            int_type.tag == "comment"
+                            or int_type.tag == "link-state"
+                            or int_type.tag == "link-speed"
+                            or int_type.tag == "link-duplex"
                     ):
                         continue
                     else:
@@ -1175,9 +1211,9 @@ class PanXMLHandler:
             else:
                 continue
             if (
-                interface_type == "ha"
-                or interface_type == "log-card"
-                or interface_type == "aggregate-group"
+                    interface_type == "ha"
+                    or interface_type == "log-card"
+                    or interface_type == "aggregate-group"
             ):
                 continue
             interface = elem.attrib["name"]
@@ -1231,7 +1267,7 @@ class PanXMLHandler:
         df_dict = {}
         df_dict_list = []
         for elem in self.config_root.findall(
-            ".//profiles//data-filtering//entry//rules/entry"
+                ".//profiles//data-filtering//entry//rules/entry"
         ):
             df_rule_name = elem.attrib["name"]
             filetype = ""

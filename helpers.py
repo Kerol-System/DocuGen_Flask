@@ -1,10 +1,8 @@
 """The SwiftDoc Project."""
 
-import argparse
 import logging
 import logging.config
 import os
-import pathlib
 import platform
 import sys
 import time
@@ -25,10 +23,9 @@ class PanHelpers:
 
     # current_dir = str(pathlib.Path(__file__).parents[1])
     my_separator = "/"  # default to Linux/Mac
-    
+
     if os.name != "posix":
         my_separator = "\\"
-
     current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + my_separator + 'flask-swiftdoc-1.0'
     customer = "Secured by Palo Alto Networks"
     date_string = ""
@@ -49,7 +46,7 @@ class PanHelpers:
             self.my_separator = "\\"
         logger.debug("Separator set to: %s", self.my_separator)
 
-    def set_path(self):
+    def set_path(self, psusername):
         """Update the input file/yaml path if this is a posix system.
 
         https://security.openstack.org/guidelines/dg_using-temporary-files-securely.html
@@ -57,7 +54,7 @@ class PanHelpers:
         # logger.debug("os name: %s", os.name) # leaving this here to debug other OS
         """
         self.input_path = (
-            self.current_dir + self.my_separator + "uploads" + self.my_separator
+            self.current_dir + self.my_separator + f"uploads{psusername}" + self.my_separator
         )
         logger.debug("Input path set to: %s", self.input_path)
         self.make_directory(self.input_path)
@@ -66,7 +63,7 @@ class PanHelpers:
         )
         logger.debug("Output path set to: %s", self.output_path)
         self.make_directory(self.output_path)
-        self.tmp_path = self.current_dir + self.my_separator + "tmp" + self.my_separator
+        self.tmp_path = (self.current_dir + self.my_separator + f"tmp{psusername}" + self.my_separator)
         logger.debug("Temp path set to: %s", self.tmp_path)
         self.make_directory(self.tmp_path)
 
@@ -79,7 +76,7 @@ class PanHelpers:
         except FileExistsError as fe:
             logger.error(
                 "Unable to create directory %s because it already exists.",
-                my_dir,
+                my_dir, fe
             )
         logger.debug("Created directory: %s", my_dir)
 
@@ -104,8 +101,6 @@ class PanHelpers:
     def remove_tmp_dir(self):
         """Blow away the temp dir at the end of the run."""
         if not self.save_temp_dir:
-            if os.path.exists(self.tmp_path) and os.path.isdir(self.tmp_path):
+            if os.path.exists(self.tmp_path):
                 shutil.rmtree(self.tmp_path)
         logger.debug("Removed temp directory: %s", self.tmp_path)
-
-

@@ -4,7 +4,6 @@ import datetime
 import logging
 import logging.config
 import os
-import pathlib
 from docxtpl import DocxTemplate
 
 logging.config.fileConfig(
@@ -570,7 +569,7 @@ class Firewall:
         try:
             self.template.save(self.output_path)
         except Exception as e:
-            logger.error("Unable to write the output.")
+            logger.error("Unable to write the output.", e)
 
         print("-" * 112)
         logger.info("-" * 112)

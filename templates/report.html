@@ -1,0 +1,45 @@
+{% extends 'main.html' %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/basic.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/dropzone.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.js"></script>
+<div class="content-wrapper" id="content-wrapper" style="min-height: 169px;">
+    <section class="content">
+        <div id="main-content">
+            <div class="row settings-container">
+                <div class="col-sm-12" id="settings-tab-container">
+                    <div class="nav nav-pills">
+                        <div class="nav-tabs-custom">
+                            <div class="nav nav-pills">
+                                  <div class="tab">
+                                    <button id="step1" class="tablinks" onclick="openCity(event, 'Tmp')" >Step 1 : Select Template Inputs </button>
+                                    <button id="step2" class="tablinks" onclick="openCity(event, 'Tsf')" disabled >Step 2 : Upload TSF File</button>
+                                    <button id="step3" class="tablinks" onclick="openCity(event, 'Customer')" disabled>Step 3 : Customer Info</button>
+                                    <button id="step4" class="tablinks" onclick="openCity(event, 'Report')" disabled>Step 4 : Generate Report</button>
+                                  </div>
+                                {% block select %}
+                                {%endblock%}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function() {
+    document.getElementById("lhs-reports").className = "active lhs-item"
+    });
+</script>
+{% endblock %}
+
+

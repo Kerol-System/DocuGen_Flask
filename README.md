@@ -1,5 +1,5 @@
-# Flask-swiftdoc-1.0
-Flask app
+# SwiftDoc
+
 
 ##Before running:
 1. Check if there is a debug_environment.cfg file present in the flask-swiftdoc directory
@@ -30,10 +30,6 @@ Please note that if you want to run in docker desktop then:
       CMD ["app.py" ] //Please put in Dockerfile
       #CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app //Please comment using # or delete in Dockerfile
 
-& if you want to run in google cloud run then:
-
-      #CMD ["app.py" ] //Please comment using # or delete in Dockerfile
-      CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app //Please put in Dockerfile
 
 ##Google Cloud Usage:
 First, we have to install google cloud sdk in operating system(mac,linux,windows).
@@ -41,12 +37,7 @@ Secondly, we have to run the following command in the same directory as the app.
 
 
       gcloud run deploy
-Please note that if you want to run in docker desktop then:
-
-      CMD ["app.py" ] //Please put in Dockerfile
-      #CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app //Please comment using # or delete in Dockerfile
-
-& if you want to run in google cloud run then:
+Please note that if you want to run in google cloud run then:
 
       #CMD ["app.py" ] //Please comment using # or delete in Dockerfile
       CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app //Please put in Dockerfile

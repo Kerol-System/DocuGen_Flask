@@ -1,31 +1,29 @@
-import os  # For File Manipulations like get paths, rename
-from flask import Flask, flash, request, redirect, render_template, url_for, send_file, make_response, Response
-from werkzeug.utils import secure_filename
-import tarfile
+import datetime
+import glob
+import json
+import logging.config
+import mammoth
+import numpy as np
+import os
+import secrets
+import shutil
+import urllib3
+from PIL import Image
 from docx import Document
 from docx.shared import Inches
-from docxtpl import DocxTemplate
-# from google.cloud import storage
-
-import shutil
-import re
-import mammoth
-import datetime
-import logging
-import logging.config
-import os
-import glob
-import time
-import ssl
-from pathlib import Path
-
-import urllib3
-from helpers import PanHelpers
-from paloalto import PaloFirewall, PaloPanorama
-from swift_doc import SwiftDoc
-from tsf_handler import PanTSFHandler
 from firewall import Firewall
+from flask import Flask, flash, request, redirect, render_template, url_for, send_file, make_response, Response, session
+from flask_bcrypt import Bcrypt
+from flask_session import Session
+from functools import wraps
+from helpers import PanHelpers
+from htmldocx import HtmlToDocx
+from paloalto import PaloFirewall, PaloPanorama
 from panorama import Panorama
+from swift_doc import SwiftDoc
+from tempfile import mkdtemp
+from tsf_handler import PanTSFHandler
+from werkzeug.utils import secure_filename
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -43,24 +41,41 @@ app.config.from_pyfile('debug_environment.cfg')
 
 # Get current path
 path = os.path.dirname(os.path.abspath(__file__))
-# file Upload
-UPLOAD_FOLDER = os.path.join(path, 'uploads')
+
+app.config["SESSION_FILE_DIR"] = mkdtemp()
+app.config["SESSION_PERMANENT"] = True
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+bcrypt = Bcrypt(app)
+
 INPUT_FOLDER = os.path.join(path, 'static/template_file/')
-OUTPUT_FOLDER = os.path.join(path, 'output')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= os.path.join(path, 'flask-swiftdoc-e3de075bfc2f.json')
-# app.config['GOOGLE_APPLICATION_CREDENTIALS'] = "flask-swiftdoc-e3de075bfc2f.json"
+TRASH_FOLDER = os.path.join(path, 'trash')
 app.config['INPUT_FOLDER'] = INPUT_FOLDER
-app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 2147483648 # 2GB limit
+app.config['MAX_CONTENT_LENGTH'] = 2147483648  # 2GB limit
+app.config['TRASH_FOLDER'] = TRASH_FOLDER
+
 
 # Allowed extension you can set your own
 ALLOWED_EXTENSIONS = set(['tgz'])
 IMAGES_EXTENSIONS = set(['png', 'jpg'])
 
+login = False
 
-# customer_name=""
-# imagename=""
+if login:
+    UPLOAD_FOLDER = os.path.join(os.path.join(path, f"uploads{str(session['username'])}"))
+    OUTPUT_FOLDER = os.path.join(os.path.join(path, "output"))
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
+
+
+# function to add
+@app.after_request
+def after_request(response):
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
 
 
 def allowed_file(filename):
@@ -71,269 +86,385 @@ def allowed_image_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in IMAGES_EXTENSIONS
 
 
-@app.route('/tsf_info')
-def upload_form():
-    return render_template('upload_tsf_file.html')
+def login_required(f):
+    """
+    Decorate routes to require login.
+    https://flask.palletsprojects.com/en/1.1.x/patterns/viewdecorators/
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("username") is None:
+            return redirect("/login")
+        return f(*args, **kwargs)
+    return decorated_function
 
 
-@app.route('/cust_info')
-def cust_info_form():
-    return render_template('customer_info.html')
+def admin_required(f):
+    """
+    Decorate routes to require login.
+    https://flask.palletsprojects.com/en/1.1.x/patterns/viewdecorators/
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("usertype") == 1:
+            return redirect("/select_template")
+        return f(*args, **kwargs)
+    return decorated_function
 
 
-@app.route('/login')
-def login_info_form():
-    return render_template('login.html')
-
-
-@app.route('/report')
-def report_form():
-    return render_template('generate_report.html')
-
-
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login_info():
+    global login
+    try:
+        if session.get("report_name") is not None:
+            if os.path.exists(os.path.join(path, "output/" + session["report_name"] + ".docx")):
+                os.remove(os.path.join(path, "output/" + session["report_name"] + ".docx"))
+        if session.get("username") is not None:
+            if os.path.isdir(os.path.join(path, f"uploads{str(session['username'])}")):
+                shutil.rmtree(os.path.join(path, f"uploads{str(session['username'])}"))
+    except OSError as e:
+        print("Error: %s - %s." % (e.filename, e.strerror))
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if username == "admin" and password == 'password':
-            return redirect(url_for('template'))
+        if request.form['user'] == 'guest':
+            session["username"] = secrets.token_urlsafe(8)
+            session["usertype"] = 1
+            login = True
+            return redirect(url_for("home"))
+        elif request.form['user'] == 'admin':
+            session["username"] = secrets.token_urlsafe(8)
+            session["usertype"] = 2
+            login = True
+            return render_template("login.html", username=session["username"])
+    return render_template("entrypage.html")
+
+
+@app.route('/password', methods=['GET', 'POST'])
+def check_password():
+    session["password"] = None
+    if request.method == 'POST':
+        user_password = bcrypt.generate_password_hash('vrx1v1vd')
+        session["password"] = user_password
+        if bcrypt.check_password_hash(session["password"], request.form['password']):
+            return redirect(url_for("home"))
         else:
-            error = "Incorrect username and password"
-            return render_template('login.html', error=error)
+            error = "Password Incorrect"
+            return render_template("login.html", error=error)
+    return render_template("login.html")
 
 
-@app.route('/tsf_info', methods=['POST'])
+@app.route("/logout")
+@login_required
+def logout():
+    global login
+    try:
+        if session.get("report_name") is not None:
+            if os.path.exists(os.path.join(path, "output/" + session["report_name"] + ".docx")):
+                os.remove(os.path.join(path, "output/" + session["report_name"] + ".docx"))
+        if session.get("username") is not None:
+            if os.path.isdir(os.path.join(path, f"uploads{str(session['username'])}")):
+                shutil.rmtree(os.path.join(path, f"uploads{str(session['username'])}"))
+    except OSError as e:
+        print("Error: %s - %s." % (e.filename, e.strerror))
+    session.clear()
+    login = False
+    return redirect(url_for("login_info"))
+
+
+@app.route('/', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def home():
+    if request.method == 'POST':
+        global ck_title
+        ck_title = request.form.get('title')
+        return url_for('create_template', ck_title='ck_title')
+    else:
+        try:
+            if session.get("report_name") is not None:
+                if os.path.exists(os.path.join(path, "output/" + session["report_name"] + ".docx")):
+                    os.remove(os.path.join(path, "output/" + session["report_name"] + ".docx"))
+            if session.get("username") is not None:
+                if os.path.isdir(os.path.join(path, f"uploads{str(session['username'])}")):
+                    shutil.rmtree(os.path.join(path, f"uploads{str(session['username'])}"))
+        except OSError as e:
+            print("Error: %s - %s." % (e.filename, e.strerror))
+        if not session.get("username"):
+            return redirect("/login")
+        # print("Here is the username " + session["username"])
+        os.chdir(INPUT_FOLDER)
+        files = glob.glob("*.docx")
+        return render_template('homepageCumTemplates.html', files=files, username=session["username"])
+
+
+@app.route('/streaming', methods=['GET', 'POST'])
+@login_required
+def streaming():
+    return render_template('troubleshooting.html')
+
+
+@app.route('/upload_docx', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def upload_docx():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return render_template('upload_docx.html')
+        file = request.files['file']
+        if file.filename == '':
+            flash('No file selected for uploading')
+            return render_template('upload_docx.html')
+        docxfile = secure_filename(file.filename)
+        if not os.path.isdir(INPUT_FOLDER):
+            os.mkdir(INPUT_FOLDER)
+        file.save(os.path.join(app.config['INPUT_FOLDER'], docxfile))
+        flash('File(s) successfully uploaded')
+        return redirect('/')
+    else:
+        return render_template('upload_docx.html')
+
+
+@app.route('/create_template/<ck_title>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def create_template(ck_title):
+    if request.method == 'POST':
+        global ck_data
+        ck_data = request.form.get('editor')
+        if ck_data is not None:
+            new_parser = HtmlToDocx()
+            docx = new_parser.parse_html_string(ck_data)
+            docx.save(os.path.join(app.config['INPUT_FOLDER'], ck_title+'.docx'))
+            return redirect('/')
+    return render_template('create_template.html')
+
+
+@app.route('/trash')
+@login_required
+@admin_required
+def trash():
+    if not os.path.isdir(TRASH_FOLDER):
+        os.mkdir(TRASH_FOLDER)
+    os.chdir(TRASH_FOLDER)
+    files = glob.glob("*.docx")
+    return render_template('trash.html', files=files)
+
+
+@app.route('/edit/<filename>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_file(filename):
+    file_path = os.path.join(INPUT_FOLDER, filename)
+    if request.method == 'POST':
+        ck_data = request.form.get('editor')
+        if ck_data is not None:
+            new_parser = HtmlToDocx()
+            docx = new_parser.parse_html_string(ck_data)
+            docx.save(os.path.join(app.config['INPUT_FOLDER'], file_path))
+            return redirect('/')
+    else:
+        with open(file_path, "rb") as file1:
+            result = mammoth.convert_to_html(file1)
+        return render_template('create_template.html', result=result.value)
+
+
+@app.route('/delete/<filename>')
+@login_required
+@admin_required
+def delete_file(filename):
+    file_path = os.path.join(INPUT_FOLDER, filename)
+    trash_file = os.path.join(TRASH_FOLDER, filename)
+    destination = os.path.join(TRASH_FOLDER)
+    if os.path.exists(file_path):
+        shutil.copy(file_path, destination)
+        os.remove(file_path)
+        flash("File is successfully deleted")
+        return redirect('/')
+    elif os.path.exists(trash_file):
+        os.remove(trash_file)
+        return redirect('/trash')
+    else:
+        flash("File is not successfully deleted because it is not present or it is deleted")
+        return redirect('/')
+
+
+@app.route('/restore/<filename>')
+@login_required
+@admin_required
+def restore(filename):
+    file_path = os.path.join(TRASH_FOLDER, filename)
+    destination = os.path.join(INPUT_FOLDER)
+    if os.path.exists(file_path):
+        shutil.copy(file_path, destination)
+        os.remove(file_path)
+    else:
+        flash("file does not exist")
+    return render_template('trash.html')
+
+
+@app.route('/stream')
+@login_required
+def stream():
+    filepath = os.path.join(path, 'SwiftDoc.log')
+    response = Response(open(filepath, "r"), mimetype="text/plain")
+    return response
+
+
+@app.route('/logs')
+@login_required
+def logs():
+    filepath = os.path.join(path, 'SwiftDoc.log')
+    return send_file(filepath, as_attachment=True)
+
+
+@app.route('/select_template', methods=["GET", "POST"])
+@login_required
+def template():
+    if request.method == 'POST':
+        global template1, product_type
+        session['template1'] = request.form.get("template_select")
+        session['product_type'] = request.form.get("product_select")
+        logger.info(str(session['template1']))
+        return redirect(url_for('upload_file'))
+    else:
+        try:
+            if session.get("report_name") is not None:
+                if os.path.exists(os.path.join(path, "output/" + session["report_name"] + ".docx")):
+                    os.remove(os.path.join(path, "output/" + session["report_name"] + ".docx"))
+            if session.get("username") is not None:
+                if os.path.isdir(os.path.join(path, f"uploads{str(session['username'])}")):
+                    shutil.rmtree(os.path.join(path, f"uploads{str(session['username'])}"))
+        except OSError as e:
+            print("Error: %s - %s." % (e.filename, e.strerror))
+        os.chdir(INPUT_FOLDER)
+        # print("Here is the username " + session["username"])
+        files = glob.glob("*.docx")
+        return render_template('select_template.html', files=files)
+
+
+@app.route('/tsf_info', methods=['GET', 'POST'])
+@login_required
 def upload_file():
     if request.method == 'POST':
         file = request.files['file']
         if file.filename == '':
             flash('No file selected for uploading')
             return redirect(request.url)
-        filename = secure_filename(file.filename)
-        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        tsffilename = secure_filename(os.path.splitext(file.filename)[0]+session["username"]+'.tgz')
+        save_path = os.path.join(os.path.join(path, f"uploads{str(session['username'])}"), tsffilename)
         current_chunk = int(request.form['dzchunkindex'])
         if os.path.exists(save_path) and current_chunk == 0:
-            # 400 and 500s will tell dropzone that an error occurred and show an error
             return make_response(('File already exists', 400))
-        if not os.path.isdir(UPLOAD_FOLDER):
-            os.mkdir(UPLOAD_FOLDER)
+        if not os.path.isdir(os.path.join(path, f"uploads{str(session['username'])}")):
+            os.mkdir(os.path.join(path, f"uploads{str(session['username'])}"))
         try:
             with open(save_path, 'ab') as f:
                 f.seek(int(request.form['dzchunkbyteoffset']))
                 f.write(file.stream.read())
-                # storage_client = storage.Client()
-                # # buckets = storage_client.list_buckets()
-                #
-                # # for bucket in buckets:
-                # # print(buckets)
-                # bucket = storage_client.get_bucket('tsf_file')
-                # blob = bucket.blob(filename)
-                # blob.upload_from_file(file)
         except OSError:
             # log.exception will include the traceback so we can see what's wrong
             logger.info('Could not write to file')
             return make_response(("Not sure why,"
                                   " but we couldn't write the file to disk", 500))
         total_chunks = int(request.form['dztotalchunkcount'])
-        if current_chunk + 1 == total_chunks:
-            # This was the last chunk, the file should be complete and the size we expect
-            if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
-                logger.info(f"File {filename} was completed, "
-                          f"but has a size mismatch."
-                          f"Was {os.path.getsize(save_path)} but we"
-                          f" expected {request.form['dztotalfilesize']} ")
-                return make_response(('Size mismatch', 500))
-            else:
-                logger.info(f'File {filename} has been uploaded successfully')
+        if current_chunk == total_chunks:
+            logger.info("file successfully uploaded")
+            return render_template("customer_info.html")
         else:
-            logger.info(f'Chunk {current_chunk + 1} of {total_chunks} '
-                      f'for file {file.filename} complete')
-
-        # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        file_without_ext = os.path.splitext(filename)[0]
-        path1 = os.path.join(UPLOAD_FOLDER, file_without_ext)
-        if not os.path.isdir(path1):
-            os.mkdir(path1)
-        os.chdir(rf'{UPLOAD_FOLDER}')
-        # flash('File(s) successfully uploaded')
-        message1 = f"{file.filename} is successfully uploaded"
-        # return make_response(("Chunk upload successful", 200))
-        return render_template('upload_tsf_file.html', message1=message1)
-
-
-@app.route('/streaming')
-def streaming():
-    os.chdir(INPUT_FOLDER)
-    files = glob.glob("*.docx")
-    return render_template('troubleshooting.html', files=files)
-
-
-@app.route('/streaming', methods=['POST'])
-def stream_file():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            flash('No file selected for uploading')
-            return redirect(request.url)
-        docxfile = secure_filename(file.filename)
-        if not os.path.isdir(INPUT_FOLDER):
-            os.mkdir(INPUT_FOLDER)
-        docxfile_ext = os.path.splitext(docxfile)
-        file.save(os.path.join(app.config['INPUT_FOLDER'], docxfile))
-        flash('File(s) successfully uploaded')
-        return redirect(url_for('streaming'))
-
-
-@app.route('/static/template_file/<filename>/delete')
-def delete_file(filename):
-    file_path = os.path.join(INPUT_FOLDER, filename)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-        flash("File is successfully deleted")
-        return redirect(url_for('streaming'))
+            return str(current_chunk)
     else:
-        flash("File is not successfully deleted because it is not present or it is deleted")
-        return redirect(url_for('streaming'))
+        return render_template('upload_tsf_file.html')
 
 
-@app.route('/stream')
-def stream():
-    filepath = os.path.join(path, 'SwiftDoc.log')
-    with open(filepath, "r") as f:
-        content = f.read()
-    return app.response_class(content, mimetype='text/plain')
-
-
-@app.route('/')
-def template():
-    try:
-        if os.path.isdir(OUTPUT_FOLDER):
-            shutil.rmtree(OUTPUT_FOLDER)
-        if os.path.isdir(UPLOAD_FOLDER):
-            shutil.rmtree(UPLOAD_FOLDER)
-    except OSError as e:
-        print("Error: %s - %s." % (e.filename, e.strerror))
-    os.chdir(INPUT_FOLDER)
-    # for file in glob.glob("*.docx"):
-    files = glob.glob("*.docx")
-    myvariable = request.form.get("template_select")
-    logger.info(str(myvariable))
-    return render_template('select_template.html', files=files)
-
-
-@app.route('/', methods=['POST'])
-def template1():
-    global template1, product_type
-    template1 = request.form.get("template_select")
-    product_type = request.form.get("product_select")
-    logger.info(str(template1))
-    return redirect(url_for('upload_form'))
-
-
-@app.route('/logs')
-def logs():
-    filepath = os.path.join(path, 'SwiftDoc.log')
-    return send_file(filepath, as_attachment=True)
-
-
-@app.route('/cust_info', methods=['POST'])
+@app.route('/cust_info', methods=['GET', 'POST'])
+@login_required
 def cust_info():
     if request.method == 'POST':
-        global customer_name
-        customer_name = request.form['customername']
-        if customer_name == "":
+        session['customer_name'] = request.form['customername']
+        if session['customer_name'] == "":
             flash("Please enter customer name")
-            return redirect(url_for('cust_info_form'))
+            return redirect(url_for('cust_info'))
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            flash('No file selected for uploading')
-            return redirect(request.url)
-        global imagename
-        imagename = secure_filename(file.filename)
-        imagename_ext = os.path.splitext(imagename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], imagename))
-        message1 = f"Your customer logo({file.filename}) is successfully uploaded"
-        message2 = f"Your customer name is: {customer_name}"
-        return render_template('customer_info.html', message1=message1, message2=message2)
+        logo = request.files['file']
+        img = Image.open(logo)
+        json_data = json.dumps(np.array(img).tolist())
+        session['new_image'] = Image.fromarray(np.array(json.loads(json_data), dtype='uint8'))
+        session['imagename'] = secure_filename(logo.filename)
+        session['new_image'].save(os.path.join(os.path.join(path, f"uploads{str(session['username'])}"), session['imagename']))
+        # message1 = f"Your customer logo({logo.filename}) is successfully uploaded"
+        # message2 = f"Your customer name is: {session['customer_name']}"
+        return redirect('/report')
+    else:
+        return render_template('customer_info.html')
 
 
-@app.route('/report', methods=['POST'])
+@app.route('/report', methods=['GET', 'POST'])
+@login_required
 def report():
     if request.method == 'POST':
-        global report_name
-        report_name = request.form['reportname']
-        if report_name == "":
+        session['report_name'] = request.form['reportname']
+        if session['report_name'] == "":
             flash("Please enter report name")
             return redirect(request.url)
-        elif len(report_name) > 35:
+        elif len(session['report_name']) > 35:
             flash("The length of report name should not be greater than 35 characters.")
             return redirect(request.url)
-        elif report_name != "" and len(report_name) <= 35:
-            if customer_name == "":
-                flash("Please enter customer name")
-                return redirect(url_for('cust_info_form'))
-            elif len(customer_name) > 35:
-                flash("The length of customer name should not be greater than 35 characters.")
-                return redirect(url_for('cust_info_form'))
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
-            if customer_name != "" and bool(re.match('^[a-zA-Z0-9 ]*$', customer_name)) == True and len(
-                    customer_name) <= 50:
-                psmain()  # Starting the Report Generator in the Backend
-                docx_file = report_name + ".docx"
-                doc = Document(os.path.join(app.config['OUTPUT_FOLDER'], docx_file))
-                header = doc.sections[0].first_page_header
-                image2 = os.path.join(app.config['UPLOAD_FOLDER'], imagename)
-                image1 = os.path.join(app.config['INPUT_FOLDER'], 'Picture1.png')
-                header_tp = header.add_paragraph()
-                header_run = header_tp.add_run()
-                header_run.add_picture(image2, width=Inches(2.051181), height=Inches(1.283465))
-                header_run.add_text('\t\t\t\t')
-                header_run.add_picture(image1, width=Inches(2.051181), height=Inches(0.3740157))
-                reportfile = os.path.join(app.config['OUTPUT_FOLDER'], report_name) + '.docx'
-                doc.save(reportfile)
+        elif session['report_name'] != "" and len(session['report_name']) <= 35:
+            if not os.path.isdir(os.path.join(path, "output")):
+                os.mkdir(os.path.join(path, "output"))
+            psmain()  # Starting the Report Generator in the Backend
+            docx_file = session['report_name'] + ".docx"
+            doc = Document(os.path.join(os.path.join(path, "output"), docx_file))
+            header = doc.sections[0].first_page_header
+            image1 = os.path.join(app.config['INPUT_FOLDER'], 'Picture1.png')
+            image2 = os.path.join(os.path.join(path, f"uploads{str(session['username'])}"), session['imagename'])
+            header_tp = header.add_paragraph()
+            header_run = header_tp.add_run()
+            header_run.add_picture(image2, width=Inches(2.051181), height=Inches(0.3740157))
+            header_run.add_text('\t\t\t\t')
+            header_run.add_picture(image1, width=Inches(2.051181), height=Inches(0.3740157))
+            reportfile = os.path.join(os.path.join(path, "output"), session['report_name']) + '.docx'
+            doc.save(reportfile)
             report_status = True
             try:
-                if report_status and os.path.isdir(UPLOAD_FOLDER):
-                    shutil.rmtree(UPLOAD_FOLDER)
+                if report_status and os.path.isdir(os.path.join(path, f"uploads{str(session['username'])}")):
+                    shutil.rmtree(os.path.join(path, f"uploads{str(session['username'])}"))
                     print("Successfully removed all files")
             except OSError as e:
                 print("Error: %s - %s." % (e.filename, e.strerror))
-            return redirect(url_for('upload_form'))
+            return str("success")
         else:
             flash("Please enter valid report name")
             return redirect(request.url)
-    return redirect(url_for('upload_form'))
+    else:
+        return render_template('generate_report.html')
 
 
 @app.route('/download')
+@login_required
 def download():
-    filepath = os.path.join(app.config['OUTPUT_FOLDER'], report_name) + '.docx'
-    return send_file(filepath, as_attachment=True)
-
+    # filepath = os.path.join(app.config['OUTPUT_FOLDER'], report_name) + '.docx'
+    if not os.path.exists(os.path.join(os.path.join(path, "output"), session['report_name']) + '.docx'):
+        logger.info("File not found")
+        flash("File not generated properly")
+    session['filepath'] = os.path.join(os.path.join(path, "output"), session['report_name']) + '.docx'
+    return send_file(session['filepath'], as_attachment=True)
 
 
 @app.route('/preview')
+@login_required
 def preview():
-    filepath = os.path.join(app.config['OUTPUT_FOLDER'], report_name) + '.docx'
-    with open(os.path.join(app.config['OUTPUT_FOLDER'], report_name) + '.docx', "rb") as file:
+    with open(os.path.join(os.path.join(path, "output"), session['report_name']) + '.docx', "rb") as file:
         result = mammoth.convert_to_html(file)
-    with open(os.path.join(app.config['OUTPUT_FOLDER'], report_name) + '.docx',
-              "w") as html_file:
-        html_file.write(result.value)
-    response = Response(open(filepath, "rb"), mimetype="text/html")
-    # response["Content-Disposition"] = "inline;filename=%s" % name
-    return response
+        html_file = result.value
+    return html_file
+
 
 def psmain():
-
-
+    process_tsf = False
+    psusername = str(session["username"])
     my_helper = PanHelpers()
     logger.info('Starting "SwiftDoc" As Built Generator')
     my_helper.print_output('Starting "SwiftDoc" As Built Generator')
@@ -343,8 +474,9 @@ def psmain():
         "%y%m%d-%H%M%S"
     )  # used for naming the temp directory
     my_helper.set_separator()  # slash or backslash? This is your legacy Bill Gates, hope you're happy.
-    my_helper.set_path()
-    context = {'Customer': customer_name, 'Month': datetime.datetime.now().strftime('%B'),
+    my_helper.set_path(psusername)
+    context = {'Customer': session['customer_name'], 'Month': datetime.datetime.now().strftime('%B'),
+
                'Year': datetime.datetime.now().strftime('%Y')}
     pan_hosts = []
     # Declare an empty list to hold the devices we find TSF and XML creds for.
@@ -354,16 +486,14 @@ def psmain():
         my_helper.input_path, my_helper.tmp_path, my_helper.my_separator
     )  # Create a TSF handler object
     customer_files = my_tsf_handler.load_tsf_archive()
-
     if customer_files is not None:  # see if there are ay tgz files in inputs/ directory
         logger.debug("Set process_tsf to True.")
         process_tsf = True
     else:
         logger.info("No TSF files found in inputs directory.")
-
     if process_tsf:
         for my_file in customer_files:
-            my_helper.set_path()  # make sure the temp path exists
+            my_helper.set_path(psusername)  # make sure the temp path exists
             logger.info("Processing file: %s", my_file)
             tsf_info = my_tsf_handler.extract_info_from_tsf(my_file)
             my_helper.remove_tmp_dir()  # blow away the temp files for this device
@@ -373,8 +503,8 @@ def psmain():
 
             if tsf_info["model"] in ["Panorama", "M-100", "M-500", "M-200", "M-600"]:
                 my_panorama = PaloPanorama(hostname, serial)
-                pan_hosts.append(my_panorama)
 
+                my_panorama.templates_prisma = tsf_info["templates_prisma"]
                 my_panorama.opmode = tsf_info["opmode"]
                 my_panorama.admins = tsf_info["admins"]
                 my_panorama.templates = tsf_info["templates"]
@@ -387,6 +517,7 @@ def psmain():
                 my_panorama.panos = tsf_info["panos"]
                 my_panorama.licenses = tsf_info["licenses"]
                 my_panorama.mgmtinfo = tsf_info["mgmtinfo"]
+                pan_hosts.append(my_panorama)
             else:
                 my_fw = PaloFirewall(hostname, serial)
                 pan_hosts.append(my_fw)
@@ -446,7 +577,6 @@ def psmain():
                     peerhainfo["ha2a"] = pan_hosts[-2].hainfo["peerha2a"]
                     peerhainfo["ha2b"] = pan_hosts[-2].hainfo["peerha2b"]
                     peerhainfo["hamode"] = pan_hosts[-2].hainfo["hamode"]
-
                     peermgmtinfo = {
                         "ip": pan_hosts[-2].hainfo["peermgmtip"],
                         "ipv6": pan_hosts[-2].hainfo["peermgmtipv6"],
@@ -463,47 +593,46 @@ def psmain():
     else:
         logger.info("No valid TSF files found.")
 
-    if not process_tsf and not process_api:
+    if not process_tsf:
         logger.info("Nothing to do!")
         my_helper.print_output("Nothing to do!")
     else:
         logger.info("Generating SwiftDoc.")
         my_helper.print_output("Generating as-built.")
 
-
-        if product_type == "Firewall":
+        if session['product_type'] == "Firewall":
             my_firewall_report = Firewall(
                 my_helper.date_string,
                 my_helper.input_path,
                 my_helper.output_path,
-                report_name,
-                template1,
+                session['report_name'],
+                session['template1'],
                 context
             )
             my_firewall_report.pan_hosts = pan_hosts
             my_firewall_report.populate_lists()
             my_firewall_report.gen_doc()
 
-        elif product_type == "Panorama":
+        elif session['product_type'] == "Panorama":
             my_panorama_report = Panorama(
                 my_helper.date_string,
                 my_helper.input_path,
                 my_helper.output_path,
-                report_name,
-                template1,
+                session['report_name'],
+                session['template1'],
                 context
             )
             my_panorama_report.pan_hosts = pan_hosts
             my_panorama_report.populate_lists()
             my_panorama_report.gen_doc()
 
-        elif product_type == "All":
+        elif session['product_type'] == "All":
             my_swift_doc = SwiftDoc(
                 my_helper.date_string,
                 my_helper.input_path,
                 my_helper.output_path,
-                report_name,
-                template1,
+                session['report_name'],
+                session['template1'],
                 context
             )
             my_swift_doc.pan_hosts = pan_hosts
@@ -513,6 +642,4 @@ def psmain():
 
 if __name__ == "__main__":  # on running python app.py
     # port = int(os.environ.get('PORT', 8080))
-    # context = ('laragon.crt', 'laragon.key')#certificate and key files
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))  # run the flask app
-    # ssl_context = 'adhoc'
+    app.run(threaded=True, port=int(os.environ.get('PORT', 8080)))  # run the flask app

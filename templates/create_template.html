@@ -1,0 +1,60 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<div class="content-wrapper" id="content-wrapper" style="min-height: 41px;">
+        <section class="content">
+            <div id="main-content"><div class="row document-details-wrapper">
+                <div class="col-md-9 h100" id="document-details">
+                    <div class="document-details row h100">
+                        <div class="col-md-3">
+                            <div class="details-navigation-container">
+                                <ol class="box-title breadcrumb ellipsis">
+                                    <li>
+                                        <a href="/" route="">
+                                            <i class="fas fa-home" title="Home" data-toggle="tooltip" data-placement="auto left"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        Template Title
+                                    </li>
+                                </ol>
+                                <div id="details-navigation">
+                                    <div class="doc-timeline">
+                                        <div class="level-zero">
+                                            <div class="circle-graphic delivery-icon html"></div>
+                                            <div class="level-info">
+                                                <div class="tab-brief">Template Details</div>
+                                                <div class="level-one ellipsis active">
+                                                    <i class="dmio-icon fas fa-pencil-alt"></i>
+                                                    Editor
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9" id="details-content">
+                            <form method="POST" enctype="multipart/form-data">
+                                {% if result %}
+                                <textarea id="editor" name="editor" class="form-control">{{result}}</textarea>
+                                {% else %}
+                                <textarea id="editor" name="editor" class="form-control"></textarea>
+                                {% endif %}
+                            </form>
+<script src="{{ url_for('static', filename='node_modules/ckeditor4/ckeditor.js')}}"></script>
+<script>
+    CKEDITOR.replace( 'editor',{
+    height: 800,
+    width: 680,
+    allowedContent: true,
+    extraPlugins:'placeholder ,token, copyformatting, save, allowsave, find, basicstyles, button, clipboard, editorplaceholder, emoji, enterkey, filebrowser, filetools, font, format, iframe, image, resize, table, tableresize, tableselection, templates, uploadfile, wysiwygarea, uploadimage, uploadwidget,pagebreak, pastefromword, pastefromgdocs, pastefromlibreoffice, pastetext, textmatch, textwatcher, tabletools '});
+</script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+</div>
+{% endblock %}

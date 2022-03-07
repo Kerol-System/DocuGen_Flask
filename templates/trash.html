@@ -1,0 +1,116 @@
+{% extends 'main.html' %}
+{% block content %}
+            <div class="content-wrapper" id="content-wrapper" style="min-height: 585px;">
+                <section class="content">
+                    <div id="main-content">
+                        <div class="home-view row">
+                            <div class="col-md-3">
+                                <div class="">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title">Folders</h3>
+                                        <div  data-onclick="newFolder"  data-_ae_click_="true">
+                                            <!--class="add-new-icon pull-right new-folder"-->
+                                        </div>
+                                    </div>
+                                    <div class="box-body no-padding" id="folders">
+                                        <ul class="folders-list nav nav-pills nav-stacked">
+                                            <li>
+                                                <a href="/" class="folder-holder home-folder reserved-folder">
+                                                    <i class="dmio-icon fas fa-home"></i>
+                                                    Home
+                                                </a>
+                                            </li>
+                                            <li class="active">
+                                                <a href="/trash" class="folder-holder trash-folder reserved-folder">
+                                                    <i class="dmio-icon fas fa-trash"></i>
+                                                    Trash
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-9" id="documents"><div class="documents-list">
+                                <div class="box-body">
+                                    <div id="documents-list">
+                                        <div id="adharaTable_" class="adhara-table-container">
+                                            <div class="table-actions-container">
+                                                <div class="flex-1"></div>
+<!--                                                <div class="data-actions table-actions">-->
+<!--                                                    <input type="search" autofocus="" class="form-control list-search" placeholder="Search templates by name" data-onfocus="onSearchToggle" data-onblur="onSearchToggle" data-onchange="onSearchCapture" data-onpaste="onSearchCapture" data-onkeyup="onSearchCapture" value="" data-_ae_change_="true" data-_ae_blur_="true" data-_ae_focus_="true" data-_ae_paste_="true" data-_ae_keyup_="true">-->
+<!--                                                </div>-->
+                                            </div>
+                                        </div>
+                                        <div class="adhara-list-wrapper adhara-card-list">
+                                            <div class="list-contents">
+                                                <div class="row">
+                                                    {% if files %}
+                                                    {% for file in files %}
+                                                    <div class="col-xlg-2 col-md-3 col-sm-4 col-xs-12">
+                                                        <div class="card-md animated card-content-wrapper">
+                                                            <div class="doc-card" >
+                                                                <div class="doc-actions">
+                                                                    <div class="dropdown">
+                                                                        <div class="overflow-container" data-onclick="overflowToggle" data-toggle="overflow-menu" data-_ae_click_="true">
+                                                                             <i class="dmio-icon dr-overflow"></i>
+                                                                        </div>
+                                                                        <div class="dropdown-content">
+                                                                        <a href=" " id="restore-{{file}}" title="Restore the Template"  onclick="show('{{file}}')">
+                                                                            <div class="a" data-_ae_click_="true">
+                                                                                <i class="fa fa-download"></i>
+                                                                                Restore
+                                                                            </div>
+                                                                        </a>
+                                                                            <a href=" " id="delete-{{file}}" title=" Delete the Template" onclick="show('{{file}}')">
+                                                                                <div class="a" data-_ae_click_="true">
+                                                                                <i class="fas fa-trash"></i>
+                                                                                    Delete Permanently
+                                                                                </div>
+                                                                            </a>
+                                                                    </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="product-img">
+                                                                    <img src="{{ url_for('static', filename='img/docx.png') }}" alt="Create a New Template" class="h110">
+                                                                </div>
+                                                                <div class="product-info">
+                                                                    <div class="ellipsis">
+                                                                        <a class="product-title" title="Report Generator" route="">{{file}}</a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                    {% else %}
+                                                    <div class="col-md-12">
+                                                        <div class="no-data">
+                                                            <h3 class="text-center">No Data Available</h3>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <script>
+            function show(strUser){
+                var strLink1 = "/delete/" + strUser;
+                var strLink2 = "/restore/" + strUser;
+                document.getElementById("delete-"+strUser).setAttribute("href", strLink1);
+                document.getElementById("restore-"+strUser).setAttribute("href", strLink2);
+                }
+                </script>
+            <script>
+                $(document).ready(function() {
+                document.getElementById("lhs-home").className = "active lhs-item"
+                });
+            </script>
+{% endblock %}
